@@ -1,0 +1,97 @@
+:root {
+    --color-palette-tan: #ECCE8E;
+    --color-palette-blue: #84ACCE;
+    --color-palette-purple: #827191;
+    --color-palette-maroon: #7D1D3F;
+    --color-palette-green: #136F63;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: blue;
+}
+
+#textInput {
+    display: block;
+    padding: 6px;
+    margin: 16px auto;
+}
+
+/* .TwistApp {
+    max-width: 100%;
+    position: relative;
+    /* top: 12px; 
+
+    padding: 10px;
+    background: var(--color-palette-tan);
+    border-radius: 20px 20px 0px 0px;
+    /* border-radius: 20px; 
+    z-index: 9999;
+
+    color: black;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.TwistApp-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.TwistApp h1 {
+    margin: 8px 0;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+.TwistApp p {
+    margin: 8px 0;
+    font-family: inherit;
+}
+
+/* .icon-button {
+    color: var(--color-palette-purple);
+} 
+
+.TwistApp .buttons-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.TwistApp .action_btn {
+    color: white;
+    border: 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.TwistApp .action_btn.submit {
+    background: var(--color-palette-green);
+}
+
+.TwistApp .action_btn.cancel {
+    background: var(--color-palette-maroon);
+}
+
+.TwistApp .info {
+    height: 30px;
+    width: 30px;
+}
+
+.twist-page {
+    display: none;
+    text-wrap: wrap;
+    max-width: 580px;
+}
+
+.twist-page.active {
+    display: block;
+} */

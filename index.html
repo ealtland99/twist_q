@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenAI Server</title>
+  <link rel="stylesheet" type="text/css" href="content-styles.css">
+  <link rel="icon" type="image/x-icon" href="TWIST_logo.png">
+  <title>TWIST for the Quantitative Study</title>
 </head>
 <body>
-  <h1>Welcome to OpenAI Server</h1>
-  <textarea id="textInput" rows="4" cols="50" placeholder="Enter text here..."></textarea>
-  <button onclick="sendToOpenAI()">Generate Response</button>
+  <h1>Fake Twitter</h1>
+  <p class="prompt">Write a tweet about ____:</p>
+  <textarea id="textInput" rows="4" cols="50" placeholder="Enter your Tweet text here..."></textarea>
+  <button onclick="sendToOpenAI()">Post My Tweet</button>
   <p id="response"></p>
 
   <script>
