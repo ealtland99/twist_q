@@ -59,16 +59,16 @@ function buildTwistApp() {
                                                 <p>No trigger or content warning detected.  Would you like me to scan to see if you need a warning?</p> \
                                             </div> \
                                             <div class="twist-page" id="page3"> \
-                                                <p>Thanks for scanning!  No sensitive content detected.  For future reference, here are some topics where it is recommended to add a warning...</p> \
+                                                <p>Thanks for scanning!  No sensitive content detected.  For future reference, here are some topics where it is recommended to add a warning: violence, sex, stigma, anything disturbing, offensive or crude language, risky behaviors, mental health, death, adult restrictive or NSFW content, crime, abuse, or sociopolitical.</p> \
                                             </div> \
                                             <div class="twist-page" id="page4"> \
-                                                <p>Thanks for scanning!  Warning recommended due to a high likelihood of one of these sensitive topics being present ____.  Heres what a trigger or content warning may look like...</p> \
+                                                <p>Thanks for scanning!  Warning recommended due to a high likelihood of one of these sensitive topics being present <span id="topTopics"></span>. <br><br>Here\'s what a trigger or content warning may look like: \'Trigger Warning: Abuse\', \'CW: relationship conflict\', or \'NSFW viewer descretion advised\'</p> \
                                             </div> \
                                             <div class="twist-page" id="page5"> \
-                                                <p>Thanks for using the TWIST app and making social media a safer place for sensitive users.  You can now post your tweet(s).</p> \
+                                                <p>Thanks for using the TWIST app and making social media a safer place for sensitive users.  You can now post your tweet.</p> \
                                             </div>\
                                             <div class="twist-page" id="page6"> \
-                                                <p>You can now post your tweet(s).</p> \
+                                                <p>You can now post your tweet.</p> \
                                             </div> \
                                             <div class="twist-page" id="page7"> \
                                                 <p>ERROR ERROR ERROR</p> \
@@ -107,11 +107,11 @@ function buildTwistApp() {
             postBtnContainer.addEventListener("click", function () {
                 twistAppContainer.style.display = "block";
 
-                // Look at text and print to console for now
+                // Look at text and check if warning is included
                 let tweetText = document.getElementById('textInput').value;
                 
                 // Simple check for whether warning is already present
-                if (tweetText.toLowerCase().includes("trigger warning") || tweetText.toLowerCase().includes("content warning")) {
+                if (tweetText.toLowerCase().includes("trigger warning") || tweetText.toLowerCase().includes("content warning") || tweetText.toLowerCase().includes("NSFW")) {
                     showPage(1);
                 }
                 else {
@@ -125,7 +125,6 @@ function buildTwistApp() {
             let lastPageIndex = 0;
 
             function showPage(index) {
-                console.log(index);
                 if (pages.length >= 1) {
                     pages.forEach((page, i) => {
                         if (i === index) {
@@ -210,11 +209,9 @@ function buildTwistApp() {
                         nextPageIndex = 5;
                         break;
                     case 2:
-                        // Assuming sendToOpenAI returns a Promise
                         try {
-                            nextPageIndex = await sendToOpenAI();
+                            nextPageIndex = await sendTweetToOpenAI();
                         } catch (error) {
-                            // Handle errors if necessary
                             console.error(error);
                             nextPageIndex = 7;
                             return;
@@ -276,18 +273,12 @@ function buildTwistApp() {
     });
 }
 
-async function sendToOpenAI() {
-    console.log("I'm in sendToOpenAI() function");
-
+async function sendTweetToOpenAI() {
     try {
         const elm = await waitForElm(".twist-page");
-
-        console.log("I'm after waitForElm");
         const activePage = document.querySelector(".twist-page.active");
 
-        console.log("I'm before the if");
         if (activePage != null && activePage.id === "page2") {
-            console.log("I'm inside the if");
             const textInput = document.getElementById('textInput').value;
             if (textInput.length > 3) {
                 const responseElement = document.getElementById('response');
@@ -302,7 +293,6 @@ async function sendToOpenAI() {
                 }
 
                 try {
-                    console.log("I'm inside the try");
                     const response = await fetch('http://localhost:3000/openai', {
                         method: 'POST',
                         headers: {
@@ -317,7 +307,17 @@ async function sendToOpenAI() {
                     if (responseElement.innerText == "No") {
                         return 3;
                     } 
-                    else if (responseElement.innerText == "Yes") {
+                    else if (responseElement.innerText.startsWith("Yes")) {
+                        const topicsList = document.getElementById('topTopics');
+                        let temp = responseElement.innerText;
+                        const index = temp.indexOf('1');
+                        if (index !== -1) {
+                            temp = temp.substring(index);
+                            temp = temp.replace(/\n/g, ', ');
+                            topicsList.innerText = temp;
+                        } else {
+                            return 7;
+                        }
                         return 4;
                     }
                     else {
@@ -334,9 +334,8 @@ async function sendToOpenAI() {
                 return 3;
             }
         }
-        console.log("I'm after the if");
     } catch (error) {
-        console.error("Error in sendToOpenAI:", error);
+        console.error("Error in sendTweetToOpenAI:", error);
         responseElement.innerText = 'Error communicating with OpenAI';
         return 7;
     }
@@ -360,7 +359,11 @@ async function createPrompt(tweetText) {
         // Get the response text
         sensitiveTopicsFile = await response.text();
 
-        prompt = "Here is a list of 12 sensitive topics with a short definition and some sub-categories each:\n\n" + sensitiveTopicsFile + "\n\n Based on this sensitive topic list, does the following tweet contain any of those topics?  Please answer with 'yes' or 'no' or 'unsure' only.\n\n" + tweetText;
+        prompt = "Here is a list of 12 sensitive topics with a short definition and some sub-categories each:\n\n" 
+                + sensitiveTopicsFile 
+                + "\n\n Based on this sensitive topic list, does the following tweet contain any of those topics?\n\n" 
+                + tweetText
+                + "\n\nPlease answer with only a 'no', an 'unsure', or if the answer is 'yes', respond with a 'yes' and a ranking of the top 5 topics the tweet exhibits with 1 as the most likely and 5 as the fifth likely.  The formatting of the ranking should look like this: '1. Violence\n2. Death\n3. Sociopolitical\n4. Crime\n5. Stigma'";
 
         return prompt;
     } catch (error) {
