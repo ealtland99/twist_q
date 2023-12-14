@@ -7,12 +7,21 @@
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    color: black;
+    font-family: Arial, sans-serif;
     text-align: center;
 }
 
 h1 {
-    color: blue;
+    color: var(--color-palette-blue);
+}
+
+.twitterBoxName {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 12px;
+    border: 4px solid var(--color-palette-blue);
 }
 
 #textInput {
@@ -21,16 +30,12 @@ h1 {
     margin: 16px auto;
 }
 
-/* .TwistApp {
+.TwistApp {
     max-width: 100%;
     position: relative;
-    /* top: 12px; 
 
     padding: 10px;
     background: var(--color-palette-tan);
-    border-radius: 20px 20px 0px 0px;
-    /* border-radius: 20px; 
-    z-index: 9999;
 
     color: black;
     font-family: Arial, sans-serif;
@@ -45,53 +50,63 @@ h1 {
 }
 
 .TwistApp h1 {
-    margin: 8px 0;
+    color: black;
+    margin: 8px auto;
     font-size: 16px;
     font-family: inherit;
 }
 
 .TwistApp p {
-    margin: 8px 0;
+    margin: 12px auto 24px auto;
     font-family: inherit;
 }
 
 /* .icon-button {
     color: var(--color-palette-purple);
-} 
+} */
 
-.TwistApp .buttons-box {
+.twist-buttons {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
 }
 
-.TwistApp .action_btn {
+.action_btn {
     color: white;
+    background-color: var(--color-palette-purple);
+    min-width: 100px;
     border: 0;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 10px;
 }
 
-.TwistApp .action_btn.submit {
-    background: var(--color-palette-green);
+.action_btn:disabled,
+.action_btn[disabled] {
+  border: 2px solid var(--color-palette-purple);
+  background-color: #a1a1a1;
+  color: black;
 }
 
-.TwistApp .action_btn.cancel {
-    background: var(--color-palette-maroon);
+
+.action_btn.submit {
+    background-color: var(--color-palette-green);
 }
 
-.TwistApp .info {
-    height: 30px;
-    width: 30px;
+.action_btn.cancel {
+    background-color: var(--color-palette-maroon);
+}
+
+.twist-page-container {
+    margin: 12px auto;
 }
 
 .twist-page {
     display: none;
     text-wrap: wrap;
-    max-width: 580px;
+    max-width: 740px;
 }
 
 .twist-page.active {
     display: block;
-} */
+}

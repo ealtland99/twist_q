@@ -29,7 +29,7 @@ function buildTwistApp() {
         if (document.getElementsByClassName("twist-extension-root")[0] == null) {
             const tweetContainer = document.querySelector(twitterBoxName);
             const postBtnContainer = document.querySelector(twitterPostButton);
-
+            
             // Create the elements and set their properties - all the HTML stuff
             const twistAppContainer = document.createElement("div");
             twistAppContainer.classList.add("twist-extension-root");
@@ -41,10 +41,7 @@ function buildTwistApp() {
             twistAppHeader.classList.add("TwistApp-header");
             twistAppHeader.innerHTML = '<h1> \
                                             TWIST: Trigger Warning Includer for Sensitive Topics \
-                                        </h1> \
-                                        <a class="info" href="info.html" title="Learn more!"> \
-                                            <FontAwesomeIcon icon="fa-regular fa-circle-info" class="icon-button" style="font-size:30px; color:var(--color-palette-purple);" /> \
-                                        </a>';
+                                        </h1>';
             twistApp.appendChild(twistAppHeader);
 
             const twistAppBody = document.createElement("div");
@@ -80,14 +77,17 @@ function buildTwistApp() {
             
             // Creates "Previous", "Next", and "Skip" buttons
             const prevBtn = document.createElement('button');
+            prevBtn.classList.add('action_btn');
             prevBtn.textContent = 'Back';
             prevBtn.id = 'prevBtn';
 
             const nextBtn = document.createElement('button');
+            nextBtn.classList.add('action_btn', 'submit');
             nextBtn.textContent = 'Next';
             nextBtn.id = 'nextBtn';
 
             const skipBtn = document.createElement('button');
+            skipBtn.classList.add('action_btn', 'cancel');
             skipBtn.textContent = 'Skip';
             skipBtn.id = 'skipBtn';
 
@@ -96,9 +96,12 @@ function buildTwistApp() {
             skipBtn.addEventListener('click', showSkipAheadPage);
 
             // Appends the pagination buttons to the twistAppBody
-            twistPageContainer.appendChild(prevBtn);
-            twistPageContainer.appendChild(nextBtn);
-            twistPageContainer.appendChild(skipBtn);
+            const twistButtons = document.createElement("div");
+            twistButtons.classList.add("twist-buttons");
+            twistButtons.appendChild(prevBtn);
+            twistButtons.appendChild(nextBtn);
+            twistButtons.appendChild(skipBtn);
+            twistPageContainer.appendChild(twistButtons);
 
             // Adds event listener to the post button click so TWIST app shows on page
             postBtnContainer.addEventListener("click", function () {
@@ -191,7 +194,7 @@ function buildTwistApp() {
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             break;
-                        case 7:
+                        default:
                             postBtnContainer.disabled = false;
                             prevBtn.style.display = "none";
                             nextBtn.style.display = "none";
@@ -250,6 +253,7 @@ function buildTwistApp() {
             }
 
             const hideAppBtn = document.createElement('button');
+            hideAppBtn.classList.add('action_btn');
             hideAppBtn.textContent = 'Minimize App';
             hideAppBtn.id = 'hideAppBtn';
 
@@ -285,43 +289,49 @@ async function sendToOpenAI() {
         if (activePage != null && activePage.id === "page2") {
             console.log("I'm inside the if");
             const textInput = document.getElementById('textInput').value;
-            const responseElement = document.getElementById('response');
-            let apiPrompt = "";
+            if (textInput.length > 3) {
+                const responseElement = document.getElementById('response');
+                let apiPrompt = "";
 
-            try {
-                apiPrompt = await createPrompt(textInput);
-            } catch (error) {
-                console.error("Error in inner try-catch 1:", error);
-                responseElement.innerText = 'Error communicating with OpenAI';
-                return 7;
+                try {
+                    apiPrompt = await createPrompt(textInput);
+                } catch (error) {
+                    console.error("Error in inner try-catch 1:", error);
+                    responseElement.innerText = 'Error communicating with OpenAI';
+                    return 7;
+                }
+
+                try {
+                    console.log("I'm inside the try");
+                    const response = await fetch('http://localhost:3000/openai', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: apiPrompt }),
+                    });
+
+                    const jsonResponse = await response.json();
+                    responseElement.innerText = jsonResponse.response;
+
+                    if (responseElement.innerText == "No") {
+                        return 3;
+                    } 
+                    else if (responseElement.innerText == "Yes") {
+                        return 4;
+                    }
+                    else {
+                        return 7;
+                    }
+                } catch (error) {
+                    console.error("Error in inner try-catch 2:", error);
+                    responseElement.innerText = 'Error communicating with OpenAI';
+                    return 7;
+                }
             }
-
-            try {
-                console.log("I'm inside the try");
-                const response = await fetch('http://localhost:3000/openai', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ text: apiPrompt }),
-                });
-
-                const jsonResponse = await response.json();
-                responseElement.innerText = jsonResponse.response;
-
-                if (responseElement.innerText == "No") {
-                    return 3;
-                } 
-                else if (responseElement.innerText == "Yes") {
-                    return 4;
-                }
-                else {
-                    return 8;
-                }
-            } catch (error) {
-                console.error("Error in inner try-catch 2:", error);
-                responseElement.innerText = 'Error communicating with OpenAI';
-                return 7;
+            else {
+                responseElement.innerText = 'Tweet was too short to communicate with OpenAI';
+                return 3;
             }
         }
         console.log("I'm after the if");
