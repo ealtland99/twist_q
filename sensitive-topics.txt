@@ -1,0 +1,127 @@
+1. Topic 1: Violence
+   - Definition: Content contains violence
+   - Subcategories:
+     1. Violence
+     2. War
+     3. Weapons
+     4. Terrorism
+     5. Police brutality
+     6. Motiveless killing
+     7. Sexual violence
+     8. Animal cruelty
+     9. Torture
+     10. Genocide
+
+2. Topic 2: Sex
+   - Definition: Content contains sexual themes, including nudity, sexual content and relationships
+   - Subcategories:
+     1. Nudity
+     2. Mild sexual content
+     3. Explicit sexual content
+     4. Relationship conflict
+     5. Reproductive health
+
+3. Topic 3: Stigma
+    - Definition: Content depicts negative stereotypes about or attitudes towards a specific group, such as racism or sexism
+    - Subcategories:
+      1. Racism
+      2. Anti-religious
+        - Sub-subcategories:
+          a. Anti-Semitic
+          b. Anti- Christian
+          c. Islamophobia
+      3. Colonialism
+        - Sub-subcategories:
+          a. Slavery
+      4. Classism
+      5. Sexism
+        - Sub-subcategories:
+          a. Misogyny
+          b. Misandry
+      6. Transphobia
+      7. Gender-identity
+      8. Sexuality
+        - Sub-subcategories:
+          a. Homophobia
+      9. Anti-disability
+
+4. Topic 4: Disturbing Content
+    - Definition: Content contains imagery, sounds, or effects that may frighten, disgust or scare
+    - Subcategories:
+      1. Disturbing content with threat
+      2. Horror and terror
+      3. Disturbing imagery
+      4. Medical content
+      5. Human bodies and functions
+
+5. Topic 5: Language
+    - Definition: Content contains language which is sexual, crude or offensive
+    - Subcategories:
+      1. Sexual language
+      2. Adult humour
+      3. Swearing
+      4. Offensive language
+
+6. Topic 6: Risky Behaviours
+    - Definition: Content depicts risky lifestyle behaviours
+    - Subcategories:
+      1. Drug misuse
+      2. Alcohol misuse
+      3. Tobacco
+      4. Gambling
+
+7. Topic 7: Mental Health
+    - Definition: Content relates to mental health issues
+    - Subcategories:
+      1. Mental health
+      2. Eating disorders
+      3. Trauma
+      4. Self-harm and suicide
+      5. Depression
+      6. OCD
+      7. Panic attacks
+      8. Anxiety
+        - Sub-subcategories:
+          a. Spiders
+          b. Snakes
+          c. Insects
+          d. Needles
+          e. Eye contact
+          f. Irregular patterns
+      9. Hair pulling
+
+8. Topic 8: Death
+    - Definition: Content relates to human death or dying
+    - Subcategories:
+      1. Death
+      2. Accidents
+      3. Natural disasters
+
+9. Topic 9: Parental Guidance
+    - Definition: Content may not be appropriate for children
+    - Subcategories:
+      1. Online access
+      2. Cyber-bullying
+      3. Competitive content
+      4. Imitative content
+      5. Upsetting content
+      6. Non-realistic violence
+
+10. Topic 10: Crime
+    - Definition: Content depicts or relates to criminal activity
+
+11. Topic 11: Abuse
+    - Definition: Content depicts or relates to abuse
+    - Subcategories:
+      1. Child abuse
+      2. Emotional abuse
+      3. Physical/sexual abuse
+      4. Neglect
+
+12. Topic 12: Sociopolitical
+    - Definition: Content includes social or political issues
+    - Subcategories:
+      1. Injustice
+      2. Political issues
+      3. Nazism
+      4. Class issues

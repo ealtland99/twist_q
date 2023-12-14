@@ -10,31 +10,16 @@
 <body>
   <h1>Fake Twitter</h1>
   <p class="prompt">Write a tweet about ____:</p>
-  <textarea id="textInput" rows="4" cols="50" placeholder="Enter your Tweet text here..."></textarea>
-  <button onclick="sendToOpenAI()">Post My Tweet</button>
+  <div class="twitterBoxName">
+    <textarea id="textInput" rows="4" cols="50" placeholder="Enter your Tweet text here..."></textarea>
+    <button class="twitterPostButton">Post My Tweet</button>
+  </div>
   <p id="response"></p>
 
-  <script>
-    async function sendToOpenAI() {
-      const textInput = document.getElementById('textInput').value;
-      const responseElement = document.getElementById('response');
-
-      try {
-        const response = await fetch('http://localhost:3000/openai', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: textInput }),
-        });
-
-        const jsonResponse = await response.json();
-        responseElement.innerText = jsonResponse.response;
-      } catch (error) {
-        console.error(error);
-        responseElement.innerText = 'Error communicating with OpenAI';
-      }
-    }
+  <script type="text/javascript" src="twist.js"></script>
+  <script language="javascript">
+    buildTwistApp();
   </script>
+
 </body>
 </html>
