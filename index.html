@@ -11,10 +11,12 @@
   <h1>Fake Twitter</h1>
   <p class="prompt">Write a tweet about ____:</p>
   <div class="twitterBoxName">
-    <textarea id="textInput" rows="15" cols="100" placeholder="Enter your Tweet text here..."></textarea>
-    <button class="twitterPostButton action_btn">Post My Tweet</button>
+    <div>
+      <textarea id="textInput" rows="22" cols="75" placeholder="Enter your Tweet text here..."></textarea>
+      <button class="twitterPostButton action_btn">Post My Tweet</button>
+    </div>
   </div>
-  <p id="response" style="display: none;"></p>
+  <p id="response" style="display: block; opacity: 0;"></p>
 
   <script type="text/javascript" src="twist.js"></script>
   <script language="javascript">

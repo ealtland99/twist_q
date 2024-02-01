@@ -50,7 +50,7 @@ function buildTwistApp() {
             const twistPageContainer = document.createElement("div");
             twistPageContainer.classList.add("twist-page-container");
             twistPageContainer.innerHTML = '<div class="twist-page active" id="page0"> \
-                                                <p>Type your tweet(s) below...</p> \
+                                                <p>Type your tweet in the text box...</p> \
                                             </div> \
                                             <div class="twist-page" id="page1"> \
                                                 <p>Warning detected.  Can I save this tweet and warning to learn more about the usage of trigger and content warnings?</p> \
@@ -62,13 +62,13 @@ function buildTwistApp() {
                                                 <p>Thanks for scanning!  No sensitive content detected.  For future reference, here are some topics where it is recommended to add a warning: violence, sex, stigma, anything disturbing, offensive or crude language, risky behaviors, mental health, death, adult restrictive or NSFW content, crime, abuse, or sociopolitical.</p> \
                                             </div> \
                                             <div class="twist-page" id="page4"> \
-                                                <p>Thanks for scanning!  Warning recommended due to a high likelihood of one of these sensitive topics being present <span id="topTopics"></span>. <br><br>Here\'s what a trigger or content warning may look like: \'Trigger Warning: Abuse\', \'CW: relationship conflict\', or \'NSFW viewer descretion advised\'</p> \
+                                                <p>Thanks for scanning!  Warning recommended due to a high likelihood of one of these sensitive topics being present: <span id="topTopics"></span></p> \
                                             </div> \
                                             <div class="twist-page" id="page5"> \
-                                                <p>Thanks for using the TWIST app and making social media a safer place for sensitive users.  You can now post your tweet.</p> \
+                                                <p>Thanks for using the TWIST app and making social media a safer place for sensitive users.  You can now edit/post your tweet.</p> \
                                             </div>\
                                             <div class="twist-page" id="page6"> \
-                                                <p>You can now post your tweet.</p> \
+                                                <p>You can now edit/post your tweet.</p> \
                                             </div> \
                                             <div class="twist-page" id="page7"> \
                                                 <p>ERROR ERROR ERROR</p> \
@@ -102,22 +102,6 @@ function buildTwistApp() {
             twistButtons.appendChild(nextBtn);
             twistButtons.appendChild(skipBtn);
             twistPageContainer.appendChild(twistButtons);
-
-            // Adds event listener to the post button click so TWIST app shows on page
-            postBtnContainer.addEventListener("click", function () {
-                twistAppContainer.style.display = "block";
-
-                // Look at text and check if warning is included
-                let tweetText = document.getElementById('textInput').value;
-                
-                // Simple check for whether warning is already present
-                if (tweetText.toLowerCase().includes("trigger warning") || tweetText.toLowerCase().includes("content warning") || tweetText.toLowerCase().includes("NSFW")) {
-                    showPage(1);
-                }
-                else {
-                    showPage(2);
-                }
-            });
 
             // Sets up the functionality for multiple pages in the design
             const pages = twistAppBody.querySelectorAll('.twist-page');
@@ -202,6 +186,32 @@ function buildTwistApp() {
                 }
             }
 
+            // Adds event listener to the post button click so TWIST app shows on page
+            postBtnContainer.addEventListener("click", function () {
+                if (currentPageIndex == 0) {
+                    twistAppContainer.style.display = "block";
+
+                    // Look at text and check if warning is included
+                    let tweetText = document.getElementById('textInput').value;
+
+                    if (tweetText.trim().length > 0) {
+                        // Simple check for whether warning is already present
+                        if (tweetText.toLowerCase().includes("trigger warning") || tweetText.toLowerCase().includes("content warning") || tweetText.toLowerCase().includes("NSFW")) {
+                            showPage(1);
+                        }
+                        else {
+                            showPage(2);
+                        }
+                    }
+                }
+                else if (currentPageIndex == 5 || currentPageIndex == 6 || currentPageIndex == 7) {
+                    showPage(0);
+                    document.getElementById('textInput').value = "";
+                    document.getElementById('response').innerText = "";
+                    // TODO Change prompt to next prompt or "all done" page
+                }
+            });
+
             async function showNextPage() {
                 let nextPageIndex = 0;
                 switch (currentPageIndex) {
@@ -279,7 +289,7 @@ async function sendTweetToOpenAI() {
         const activePage = document.querySelector(".twist-page.active");
 
         if (activePage != null && activePage.id === "page2") {
-            const textInput = document.getElementById('textInput').value;
+            const textInput = document.getElementById('textInput').value.trim();
             if (textInput.length > 3) {
                 const responseElement = document.getElementById('response');
                 let apiPrompt = "";
@@ -309,18 +319,19 @@ async function sendTweetToOpenAI() {
                     } 
                     else if (responseElement.innerText.startsWith("Yes")) {
                         const topicsList = document.getElementById('topTopics');
-                        let temp = responseElement.innerText;
+                        let temp = responseElement.innerText.trim();
                         const index = temp.indexOf('1');
                         if (index !== -1) {
                             temp = temp.substring(index);
-                            temp = temp.replace(/\n/g, ', ');
                             topicsList.innerText = temp;
                         } else {
+                            console.error("Error line 328");
                             return 7;
                         }
                         return 4;
                     }
                     else {
+                        console.error("Error line 334");
                         return 7;
                     }
                 } catch (error) {
@@ -363,7 +374,8 @@ async function createPrompt(tweetText) {
                 + sensitiveTopicsFile 
                 + "\n\n Based on this sensitive topic list, does the following tweet contain any of those topics?\n\n" 
                 + tweetText
-                + "\n\nPlease answer with only a 'no', an 'unsure', or if the answer is 'yes', respond with a 'yes' and a ranking of the top 5 topics the tweet exhibits with 1 as the most likely and 5 as the fifth likely.  The formatting of the ranking should look like this: '1. Violence\n2. Death\n3. Sociopolitical\n4. Crime\n5. Stigma'";
+                + "\n\nPlease answer with only a 'no' or if the answer is 'yes', respond with a 'yes' and a ranking of the top 5 topics the tweet exhibits with 1 as the most likely and 5 as the fifth likely.  The formatting of the ranking should look like this: '1. Violence, 2. Death, 3. Sociopolitical, 4. Crime, 5. Stigma'"
+                + "\nAfter this ranking, include a sample trigger or content warning to complete this sentence and fill in the blank with ONLY 1-5 words: 'Here's what a trigger or content warning may look like: <blank>'";
 
         return prompt;
     } catch (error) {
