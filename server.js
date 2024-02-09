@@ -3,8 +3,9 @@ import bodyParser from "body-parser";
 import * as path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import 'dotenv/config'
-import OpenAI  from "openai";
+import "dotenv/config";
+import OpenAI from "openai";
+import { MongoClient, ObjectId } from "mongodb";
 
 const openai = new OpenAI();
 const app = express();
@@ -15,28 +16,157 @@ app.use(express.static(__dirname));
 var jsonParser = bodyParser.json();
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname + "/index.html"));
+    res.sendFile(path.join(__dirname + "/index.html"));
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`Example app listening at http://localhost:${port}`);
 });
 
 // Endpoint for handling OpenAI requests
-app.post('/openai', jsonParser, async (req, res) => {
-  try {
-    // Get text from the request body
-    const text = req.body.text;
-    
-      const completion = await openai.chat.completions.create({
+app.post("/openai", jsonParser, async (req, res) => {
+    try {
+        // Get text from the request body
+        const text = req.body.text;
+
+        const completion = await openai.chat.completions.create({
             messages: [{ role: "system", content: text }],
             model: "gpt-3.5-turbo",
         });
 
         // Send the OpenAI response back to the frontend
-    res.json({ response: completion.choices[0].message.content });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+        res.json({ response: completion.choices[0].message.content });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
+
+// Endpoint for handling the tweet save to the database
+app.post("/save-original-tweet", jsonParser, async (req, res) => {
+    try {
+        // Get tweet text from the request body
+        const tweetText = req.body.tweetText;
+        const intervention = req.body.intervention;
+
+        insertTweetRow(
+            {
+                originalTweet: tweetText,
+                intervention: "",
+                revisedTweet: "",
+            },
+            function (data) {
+                writeOKResponse(
+                    res,
+                    "Original tweet saved successfully (" + data._id + ")",
+                    { _id: data._id }
+                );
+            }
+        );
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Endpoint for handling the tweet save to the database
+app.post("/save-revised-tweet", jsonParser, async (req, res) => {
+    try {
+        // Get tweet text from the request body
+        const tweetText = req.body.tweetText;
+        const intervention = req.body.intervention;
+        const tweetID = req.body.tweetID;
+
+        updateTweetRow(
+            { _id: new ObjectId(tweetID) },
+            { revisedTweet: tweetText, intervention: intervention },
+            function (err) {
+                if (err) {
+                    writeBadRequestResponse(
+                        res,
+                        "An error occurred while updating the tweet" + err
+                    );
+                    return;
+                }
+                writeOKResponse(res, "Revised tweet saved successfully");
+            }
+        );
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient("mongodb://localhost:27017/twist");
+let db;
+let tweets;
+
+async function run() {
+    try {
+        // Connect the client to the server
+        await client.connect();
+        // Send a ping to confirm a successful connection
+        await client.db("twist").command({ ping: 1 });
+        console.log(
+            "Pinged your deployment. You successfully connected to MongoDB!"
+        );
+
+        // Send a ping to confirm a successful connection
+        db = await client.db("twist");
+        tweets = db.collection("tweets");
+        if (tweets == null) {
+            tweets = db.createCollection("tweets");
+            console.log("Tweets collection does not exist so created");
+        }
+    } finally {
+        // Ensures that the client will close when you finish/error
+        //await client.close();
+    }
+}
+run().catch(console.dir);
+
+let insertTweetRow = function (data, callback) {
+    tweets.insertOne(data);
+    console.log(
+        "insertTweetRow: Inserted a document into the tweets collection: " +
+            data._id
+    );
+    if (callback) callback(data);
+};
+
+let updateTweetRow = async function (query, newvalues, callback) {
+    console.log("updateTweetRow: query: " + JSON.stringify(query));
+    console.log("updateTweetRow: newValue: " + JSON.stringify(newvalues));
+
+    try {
+        await tweets.updateOne(query, {
+            $set: newvalues,
+        });
+
+        console.log("updateTweetRow: Updated a document in tweets");
+        if (callback) callback();
+    } catch (error) {
+        console.error("Error updating tweet:", error);
+        if (callback) callback(error);
+    }
+};
+
+//https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+let writeOKResponse = function (res, message, data) {
+    let obj = {
+        status: "OK",
+        message: message,
+        data: data,
+    };
+    console.log("writeOKResponse: " + message);
+
+    res.writeHead(200, { "Content-type": "application/json" });
+    res.end(JSON.stringify(obj));
+};
+
+let writeBadRequestResponse = function (res, message) {
+    console.log("writeBadRequestResponse: " + message);
+    res.writeHead(400, { "Content-type": "text/plain" });
+    res.end(message);
+};
