@@ -209,9 +209,6 @@ function buildTwistApp() {
                         currentPageIndex,
                         lastPageIndex
                     );
-                    console.log(
-                        "In client side, MY_TWEET_ID = '" + MY_TWEET_ID + "'"
-                    );
 
                     if (currentPageIndex == 0) {
                         twistAppContainer.style.display = "block";
@@ -240,7 +237,19 @@ function buildTwistApp() {
                         showPage(0);
                         document.getElementById("textInput").value = "";
                         document.getElementById("response").innerText = "";
-                        // TODO Change prompt to next prompt or "all done" page
+                        const prompt = getNextPrompt();
+                        if (prompt == "") {
+                            // TODO Go to all done page
+                            console.log("ALL DONE WITH PART B OF STUDY!");
+
+                            // Temp fix
+                            document.getElementById("promptText").textContent =
+                                "ALL DONE WITH PART B OF THE STUDY!";
+                            tweetContainer.style.display = "none";
+                        } else {
+                            document.getElementById("promptText").textContent =
+                                prompt;
+                        }
                     }
                 } catch (error) {
                     console.error("Error saving tweet:", error);
@@ -428,13 +437,6 @@ async function createPrompt(tweetText) {
 
 // Function to send tweetText to the server for saving
 async function saveTweetToDatabase(tweetText, currentPageIndex, lastPageIndex) {
-    console.log(
-        "I'm in saveTweet function.",
-        tweetText,
-        currentPageIndex,
-        lastPageIndex
-    );
-
     // Define intervention based on the current and last page indices
     // Current Page == 0                       --> Original tweet
     // Current Page == 5 && Previous Page == 3 --> No sensitive content detected, "revised" tweet
@@ -481,7 +483,6 @@ async function saveTweetToDatabase(tweetText, currentPageIndex, lastPageIndex) {
             // Extract the tweetID from the response
             const data = await response.json();
             const tweetID = data.data._id; // Store the tweetID for later use
-            console.log("Tweet ID: " + tweetID);
             return tweetID;
         } catch (error) {
             console.error("Error saving tweet:", error);

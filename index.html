@@ -7,9 +7,9 @@
   <link rel="icon" type="image/x-icon" href="TWIST_logo.png">
   <title>TWIST for the Quantitative Study</title>
 </head>
-<body>
+<body onload="initialize()">
   <h1>Fake Twitter</h1>
-  <p class="prompt">Write a tweet about ____:</p>
+  <p class="prompt" id="promptText">Write a tweet about ____:</p>
   <div class="twitterBoxName">
     <div>
       <textarea id="textInput" rows="22" cols="75" placeholder="Enter your Tweet text here..."></textarea>
@@ -18,10 +18,20 @@
   </div>
   <p id="response" style="display: block; opacity: 0;"></p>
 
+  <script type="text/javascript" src="prompts.js"></script>
   <script type="text/javascript" src="twist.js"></script>
-  <script language="javascript">
-    buildTwistApp();
+  <script>
+    function initialize() {
+        //initializePrompts(dataset)
+        initializePrompts("A")
+          .then(() => {
+            const prompt = getNextPrompt();
+            document.getElementById("promptText").textContent = prompt;
+          })
+          .catch((error) => console.error("Error initializing prompts:", error));
+        
+        buildTwistApp();
+    }
   </script>
-
 </body>
 </html>

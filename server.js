@@ -15,6 +15,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 var jsonParser = bodyParser.json();
 
+let dataset = "A"; // Default dataset value
+
+const datasetArg = process.argv.find((arg) => arg.startsWith("dataset="));
+if (datasetArg) {
+    dataset = datasetArg.split("=")[1]; // Extracting the dataset parameter
+}
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname + "/index.html"));
 });
@@ -47,7 +54,6 @@ app.post("/save-original-tweet", jsonParser, async (req, res) => {
     try {
         // Get tweet text from the request body
         const tweetText = req.body.tweetText;
-        const intervention = req.body.intervention;
 
         insertTweetRow(
             {
@@ -136,9 +142,6 @@ let insertTweetRow = function (data, callback) {
 };
 
 let updateTweetRow = async function (query, newvalues, callback) {
-    console.log("updateTweetRow: query: " + JSON.stringify(query));
-    console.log("updateTweetRow: newValue: " + JSON.stringify(newvalues));
-
     try {
         await tweets.updateOne(query, {
             $set: newvalues,
