@@ -15,14 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 var jsonParser = bodyParser.json();
 
-let dataset = "A"; // Default dataset value
-
-const datasetArg = process.argv.find((arg) => arg.startsWith("dataset="));
-if (datasetArg) {
-    dataset = datasetArg.split("=")[1]; // Extracting the dataset parameter
-}
-
-app.get("/", (req, res) => {
+app.get("/:dataset", (req, res) => {
     res.sendFile(path.join(__dirname + "/index.html"));
 });
 

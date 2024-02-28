@@ -21,9 +21,11 @@
   <script type="text/javascript" src="prompts.js"></script>
   <script type="text/javascript" src="twist.js"></script>
   <script>
+    // Extract dataset parameter from URL
+    const dataset = window.location.pathname.split("/")[1];
+
     function initialize() {
-        //initializePrompts(dataset)
-        initializePrompts("A")
+        initializePrompts(dataset)
           .then(() => {
             const prompt = getNextPrompt();
             document.getElementById("promptText").textContent = prompt;
