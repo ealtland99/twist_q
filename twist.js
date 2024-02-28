@@ -295,35 +295,13 @@ function buildTwistApp() {
 
             showPage(currentPageIndex);
 
-            // Creates a button to minimize/maximize the TWIST app
-            function toggleTWIST() {
-                if (twistPageContainer.style.display == "none") {
-                    twistPageContainer.style.display = "block";
-                    hideAppBtn.textContent = "Minimize App";
-                } else {
-                    twistPageContainer.style.display = "none";
-                    hideAppBtn.textContent = "Maximize App";
-                }
-            }
-
-            const hideAppBtn = document.createElement("button");
-            hideAppBtn.classList.add("action_btn");
-            hideAppBtn.textContent = "Minimize App";
-            hideAppBtn.id = "hideAppBtn";
-
-            hideAppBtn.addEventListener("click", toggleTWIST);
-            twistAppBody.appendChild(hideAppBtn);
-
             // Builds the twistAppContainer with all its components
             twistApp.appendChild(twistAppBody);
             twistAppContainer.appendChild(twistApp);
             twistAppContainer.style.display = "block";
 
             // Append the elements to the target on Twitter page
-            tweetContainer.insertBefore(
-                twistAppContainer,
-                tweetContainer.firstChild
-            );
+            tweetContainer.append(twistAppContainer);
 
             //console.log("TWIST APP HAS BEEN CREATED AND ADDED TO PAGE");
         } else {

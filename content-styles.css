@@ -46,7 +46,7 @@ h1 {
     position: relative;
 
     padding: 10px;
-    margin-right: 12px;
+    margin-left: 12px;
     background: var(--color-palette-tan);
 
     color: black;
@@ -65,11 +65,6 @@ h1 {
     color: black;
     margin: 8px auto;
     font-size: 16px;
-    font-family: inherit;
-}
-
-.TwistApp p {
-    margin: 12px auto 24px auto;
     font-family: inherit;
 }
 
@@ -107,10 +102,6 @@ h1 {
 
 .action_btn.cancel {
     background-color: var(--color-palette-maroon);
-}
-
-.twist-page-container {
-    margin: 12px auto;
 }
 
 .twist-page {
