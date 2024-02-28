@@ -194,6 +194,8 @@ function buildTwistApp() {
 
             // Adds event listener to the post button click so TWIST app shows on page
             postBtnContainer.addEventListener("click", async function () {
+                let currPrompt =
+                    document.getElementById("promptText").textContent;
                 let tweetText = document.getElementById("textInput").value;
                 tweetText = tweetText.trim();
 
@@ -205,6 +207,7 @@ function buildTwistApp() {
                     // Current Page == 6                       --> No scan, "revised" tweet
                     // Current Page == 7                       --> Something went wrong, don't save this tweet
                     MY_TWEET_ID = await saveTweetToDatabase(
+                        currPrompt,
                         tweetText,
                         currentPageIndex,
                         lastPageIndex
@@ -237,8 +240,8 @@ function buildTwistApp() {
                         showPage(0);
                         document.getElementById("textInput").value = "";
                         document.getElementById("response").innerText = "";
-                        const prompt = getNextPrompt();
-                        if (prompt == "") {
+                        const newPrompt = getNextPrompt();
+                        if (newPrompt == "") {
                             // TODO Go to all done page
                             console.log("ALL DONE WITH PART B OF STUDY!");
 
@@ -248,7 +251,7 @@ function buildTwistApp() {
                             tweetContainer.style.display = "none";
                         } else {
                             document.getElementById("promptText").textContent =
-                                prompt;
+                                newPrompt;
                         }
                     }
                 } catch (error) {
@@ -436,34 +439,42 @@ async function createPrompt(tweetText) {
 }
 
 // Function to send tweetText to the server for saving
-async function saveTweetToDatabase(tweetText, currentPageIndex, lastPageIndex) {
+async function saveTweetToDatabase(
+    currPrompt,
+    tweetText,
+    currentPageIndex,
+    lastPageIndex
+) {
     // Define intervention based on the current and last page indices
     // Current Page == 0                       --> Original tweet
     // Current Page == 5 && Previous Page == 3 --> No sensitive content detected, "revised" tweet
     // Current Page == 5 && Previous Page == 4 --> Sensitive content detected, revised tweet
     // Current Page == 6                       --> No scan, "revised" tweet
     // Current Page == 7                       --> Something went wrong, don't save this tweet
-    let intervention = "";
-    switch (currentPageIndex) {
-        case 0:
-            intervention = "";
-            break;
-        case 5:
-            intervention =
-                lastPageIndex == 3
-                    ? "No SC"
-                    : lastPageIndex == 4
-                    ? "SC Detected"
-                    : "ERROR";
-            break;
-        case 6:
-            intervention = "No Scan";
-            break;
-        default:
-            intervention = "ERROR";
-    }
+    // let intervention = "";
+    // switch (currentPageIndex) {
+    //     case 0:
+    //         intervention = "";
+    //         break;
+    //     case 5:
+    //         intervention =
+    //             lastPageIndex == 3
+    //                 ? "No SC Detected"
+    //                 : lastPageIndex == 4
+    //                 ? "SC Detected"
+    //                 : "ERROR";
+    //         break;
+    //     case 6:
+    //         intervention = "No Scan";
+    //         break;
+    //     default:
+    //         intervention = "ERROR";
+    // }
 
-    if (intervention == "") {
+    let scanned = false;
+    let scDetected = false;
+
+    if (currentPageIndex == 0) {
         try {
             // Make an asynchronous request to the server
             const response = await fetch("/save-original-tweet", {
@@ -472,6 +483,7 @@ async function saveTweetToDatabase(tweetText, currentPageIndex, lastPageIndex) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    prompt: currPrompt,
                     tweetText: tweetText,
                 }),
             });
@@ -488,27 +500,40 @@ async function saveTweetToDatabase(tweetText, currentPageIndex, lastPageIndex) {
             console.error("Error saving tweet:", error);
             throw error; // Propagate the error further if needed
         }
-    } else {
-        try {
-            // Make an asynchronous request to the server
-            const response = await fetch("/save-revised-tweet", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    tweetText: tweetText,
-                    intervention: intervention,
-                    tweetID: MY_TWEET_ID,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to save revised tweet");
-            }
-        } catch (error) {
-            console.error("Error saving revised tweet:", error);
-            throw error; // Propagate the error further if needed
+    } else if (currentPageIndex == 5) {
+        scanned = true;
+        if (lastPageIndex == 4) {
+            scDetected = true;
         }
+    } else if (currentPageIndex == 6) {
+        // TODO
+        // if () {
+        //     scDetected = true;
+        // }
+    } else {
+        return; // ERROR
+    }
+
+    try {
+        // Make an asynchronous request to the server
+        const response = await fetch("/save-revised-tweet", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                tweetText: tweetText,
+                scanned: scanned,
+                scDetected: scDetected,
+                tweetID: MY_TWEET_ID,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to save revised tweet");
+        }
+    } catch (error) {
+        console.error("Error saving revised tweet:", error);
+        throw error; // Propagate the error further if needed
     }
 }

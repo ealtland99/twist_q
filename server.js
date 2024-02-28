@@ -47,11 +47,14 @@ app.post("/save-original-tweet", jsonParser, async (req, res) => {
     try {
         // Get tweet text from the request body
         const tweetText = req.body.tweetText;
+        const prompt = req.body.prompt;
 
         insertTweetRow(
             {
+                prompt: prompt,
                 originalTweet: tweetText,
-                intervention: "",
+                scanned: false,
+                scDetected: false,
                 revisedTweet: "",
             },
             function (data) {
@@ -73,12 +76,17 @@ app.post("/save-revised-tweet", jsonParser, async (req, res) => {
     try {
         // Get tweet text from the request body
         const tweetText = req.body.tweetText;
-        const intervention = req.body.intervention;
+        const scanned = req.body.scanned;
+        const scDetected = req.body.scDetected;
         const tweetID = req.body.tweetID;
 
         updateTweetRow(
             { _id: new ObjectId(tweetID) },
-            { revisedTweet: tweetText, intervention: intervention },
+            {
+                revisedTweet: tweetText,
+                scanned: scanned,
+                scDetected: scDetected,
+            },
             function (err) {
                 if (err) {
                     writeBadRequestResponse(
