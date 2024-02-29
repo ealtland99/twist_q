@@ -53,8 +53,9 @@ app.post("/save-original-tweet", jsonParser, async (req, res) => {
             {
                 prompt: prompt,
                 originalTweet: tweetText,
-                scanned: false,
+                userScanned: false,
                 scDetected: false,
+                openAIResponse: "",
                 revisedTweet: "",
             },
             function (data) {
@@ -76,16 +77,18 @@ app.post("/save-revised-tweet", jsonParser, async (req, res) => {
     try {
         // Get tweet text from the request body
         const tweetText = req.body.tweetText;
-        const scanned = req.body.scanned;
+        const userScanned = req.body.userScanned;
         const scDetected = req.body.scDetected;
+        const openAIResponse = req.body.openAIResponse;
         const tweetID = req.body.tweetID;
 
         updateTweetRow(
             { _id: new ObjectId(tweetID) },
             {
                 revisedTweet: tweetText,
-                scanned: scanned,
+                userScanned: userScanned,
                 scDetected: scDetected,
+                openAIResponse: openAIResponse,
             },
             function (err) {
                 if (err) {

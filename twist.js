@@ -1,4 +1,5 @@
 let MY_TWEET_ID = "";
+let SC_DETECTED = false;
 
 // This function waits for an element to be present before acting on it
 // (like when you want to append to something, you need to ensure it's there first)
@@ -44,9 +45,7 @@ function buildTwistApp() {
             const twistAppHeader = document.createElement("div");
             twistAppHeader.classList.add("TwistApp-header");
             twistAppHeader.innerHTML =
-                "<h1> \
-                                            TWIST: Trigger Warning Includer for Sensitive Topics \
-                                        </h1>";
+                "<h1> TWIST: Trigger Warning Includer for Sensitive Topics </h1>";
             twistApp.appendChild(twistAppHeader);
 
             const twistAppBody = document.createElement("div");
@@ -59,7 +58,7 @@ function buildTwistApp() {
                                                 <p>Type your tweet in the text box...</p> \
                                             </div> \
                                             <div class="twist-page" id="page1"> \
-                                                <p>Warning detected.  Can I save this tweet and warning to learn more about the usage of trigger and content warnings?</p> \
+                                                <p>Warning detected.  Thank you for adding a warning!  Can I scan to see if your content requires one?</p> \
                                             </div> \
                                             <div class="twist-page" id="page2"> \
                                                 <p>No trigger or content warning detected.  Would you like me to scan to see if you need a warning?</p> \
@@ -72,7 +71,7 @@ function buildTwistApp() {
                                             </div> \
                                             <div class="twist-page" id="page5"> \
                                                 <p>Thanks for using the TWIST app and making social media a safer place for sensitive users.  You can now edit/post your tweet.</p> \
-                                            </div>\
+                                            </div> \
                                             <div class="twist-page" id="page6"> \
                                                 <p>You can now edit/post your tweet.</p> \
                                             </div> \
@@ -196,16 +195,13 @@ function buildTwistApp() {
             postBtnContainer.addEventListener("click", async function () {
                 let currPrompt =
                     document.getElementById("promptText").textContent;
+                currPrompt = currPrompt.split(": ")[1];
+
                 let tweetText = document.getElementById("textInput").value;
                 tweetText = tweetText.trim();
 
                 try {
-                    // Send tweetText to the server for saving (based on current/previous pages)
-                    // Current Page == 0                       --> Original tweet
-                    // Current Page == 5 && Previous Page == 3 --> No sensitive content detected, "revised" tweet
-                    // Current Page == 5 && Previous Page == 4 --> Sensitive content detected, revised tweet
-                    // Current Page == 6                       --> No scan, "revised" tweet
-                    // Current Page == 7                       --> Something went wrong, don't save this tweet
+                    // Send tweetText to the server for saving
                     MY_TWEET_ID = await saveTweetToDatabase(
                         currPrompt,
                         tweetText,
@@ -222,9 +218,11 @@ function buildTwistApp() {
                                 tweetText
                                     .toLowerCase()
                                     .includes("trigger warning") ||
+                                tweetText.toLowerCase().startsWith("tw") ||
                                 tweetText
                                     .toLowerCase()
                                     .includes("content warning") ||
+                                tweetText.toLowerCase().startsWith("cw") ||
                                 tweetText.toLowerCase().includes("nsfw")
                             ) {
                                 showPage(1);
@@ -238,6 +236,7 @@ function buildTwistApp() {
                         currentPageIndex == 7
                     ) {
                         showPage(0);
+                        SC_DETECTED = false;
                         document.getElementById("textInput").value = "";
                         document.getElementById("response").innerText = "";
                         const newPrompt = getNextPrompt();
@@ -247,7 +246,7 @@ function buildTwistApp() {
 
                             // Temp fix
                             document.getElementById("promptText").textContent =
-                                "ALL DONE WITH PART B OF THE STUDY!";
+                                "ALL DONE WITH PART B OF THE STUDY!\n <link to next page>";
                             tweetContainer.style.display = "none";
                         } else {
                             document.getElementById("promptText").textContent =
@@ -264,16 +263,36 @@ function buildTwistApp() {
                 let nextPageIndex = 0;
                 switch (currentPageIndex) {
                     case 1:
-                        nextPageIndex = 5;
-                        break;
-                    case 2:
                         try {
-                            nextPageIndex = await sendTweetToOpenAI();
+                            nextPageIndex = await sendTweetToOpenAI(true);
                         } catch (error) {
                             console.error(error);
                             nextPageIndex = 7;
                             return;
                         }
+
+                        if (nextPageIndex == 4) {
+                            SC_DETECTED = true;
+                        } else {
+                            SC_DETECTED = false;
+                        }
+
+                        break;
+                    case 2:
+                        try {
+                            nextPageIndex = await sendTweetToOpenAI(true);
+                        } catch (error) {
+                            console.error(error);
+                            nextPageIndex = 7;
+                            return;
+                        }
+
+                        if (nextPageIndex == 4) {
+                            SC_DETECTED = true;
+                        } else {
+                            SC_DETECTED = false;
+                        }
+
                         break;
                     case 3:
                         nextPageIndex = 5;
@@ -289,7 +308,21 @@ function buildTwistApp() {
                 showPage(lastPageIndex);
             }
 
-            function showSkipAheadPage() {
+            async function showSkipAheadPage() {
+                try {
+                    scInt = await sendTweetToOpenAI(false);
+                    console.log("scInt: " + scInt);
+                } catch (error) {
+                    console.error(error);
+                    return;
+                }
+
+                if (scInt == 4) {
+                    SC_DETECTED = true;
+                } else {
+                    SC_DETECTED = false;
+                }
+
                 showPage(6);
             }
 
@@ -310,21 +343,23 @@ function buildTwistApp() {
     });
 }
 
-async function sendTweetToOpenAI() {
-    try {
-        const elm = await waitForElm(".twist-page");
-        const activePage = document.querySelector(".twist-page.active");
+async function sendTweetToOpenAI(showResponse) {
+    const elm = await waitForElm(".twist-page");
+    const activePage = document.querySelector(".twist-page.active");
+    const textInput = document.getElementById("textInput").value.trim();
+    const responseElement = document.getElementById("response");
 
-        if (activePage != null && activePage.id === "page2") {
-            const textInput = document.getElementById("textInput").value.trim();
+    try {
+        if (
+            activePage != null &&
+            (activePage.id === "page2" || activePage.id === "page1")
+        ) {
             if (textInput.length > 3) {
-                const responseElement = document.getElementById("response");
                 let apiPrompt = "";
 
                 try {
                     apiPrompt = await createPrompt(textInput);
                 } catch (error) {
-                    console.error("Error in inner try-catch 1:", error);
                     responseElement.innerText =
                         "Error communicating with OpenAI";
                     return 7;
@@ -345,26 +380,38 @@ async function sendTweetToOpenAI() {
                     const jsonResponse = await response.json();
                     responseElement.innerText = jsonResponse.response;
 
-                    if (responseElement.innerText.startsWith("No")) {
-                        return 3;
-                    } else if (responseElement.innerText.startsWith("Yes")) {
-                        const topicsList = document.getElementById("topTopics");
-                        let temp = responseElement.innerText.trim();
-                        const index = temp.indexOf("1");
-                        if (index !== -1) {
-                            temp = temp.substring(index);
-                            topicsList.innerText = temp;
+                    if (showResponse) {
+                        if (responseElement.innerText.startsWith("No")) {
+                            return 3;
+                        } else if (
+                            responseElement.innerText.startsWith("Yes")
+                        ) {
+                            const topicsList =
+                                document.getElementById("topTopics");
+                            let temp = responseElement.innerText.trim();
+                            const index = temp.indexOf("1");
+                            if (index !== -1) {
+                                temp = temp.substring(index);
+                                topicsList.innerText = temp;
+                                return 4;
+                            } else {
+                                responseElement.innerText =
+                                    "Error communicating with OpenAI";
+                                return 7;
+                            }
                         } else {
-                            console.error("Error line 338");
+                            responseElement.innerText =
+                                "Error communicating with OpenAI";
                             return 7;
                         }
-                        return 4;
                     } else {
-                        console.error("Error line 344");
-                        return 7;
+                        if (responseElement.innerText.startsWith("No")) {
+                            return 4;
+                        } else {
+                            return 3;
+                        }
                     }
                 } catch (error) {
-                    console.error("Error in inner try-catch 2:", error);
                     responseElement.innerText =
                         "Error communicating with OpenAI";
                     return 7;
@@ -380,6 +427,9 @@ async function sendTweetToOpenAI() {
         responseElement.innerText = "Error communicating with OpenAI";
         return 7;
     }
+
+    responseElement.innerText = "Error communicating with OpenAI";
+    return 7;
 }
 
 async function createPrompt(tweetText) {
@@ -423,34 +473,8 @@ async function saveTweetToDatabase(
     currentPageIndex,
     lastPageIndex
 ) {
-    // Define intervention based on the current and last page indices
-    // Current Page == 0                       --> Original tweet
-    // Current Page == 5 && Previous Page == 3 --> No sensitive content detected, "revised" tweet
-    // Current Page == 5 && Previous Page == 4 --> Sensitive content detected, revised tweet
-    // Current Page == 6                       --> No scan, "revised" tweet
-    // Current Page == 7                       --> Something went wrong, don't save this tweet
-    // let intervention = "";
-    // switch (currentPageIndex) {
-    //     case 0:
-    //         intervention = "";
-    //         break;
-    //     case 5:
-    //         intervention =
-    //             lastPageIndex == 3
-    //                 ? "No SC Detected"
-    //                 : lastPageIndex == 4
-    //                 ? "SC Detected"
-    //                 : "ERROR";
-    //         break;
-    //     case 6:
-    //         intervention = "No Scan";
-    //         break;
-    //     default:
-    //         intervention = "ERROR";
-    // }
-
-    let scanned = false;
-    let scDetected = false;
+    let userScanned = false;
+    const openAIResponse = document.getElementById("response").innerText;
 
     if (currentPageIndex == 0) {
         try {
@@ -479,15 +503,10 @@ async function saveTweetToDatabase(
             throw error; // Propagate the error further if needed
         }
     } else if (currentPageIndex == 5) {
-        scanned = true;
+        userScanned = true;
         if (lastPageIndex == 4) {
             scDetected = true;
         }
-    } else if (currentPageIndex == 6) {
-        // TODO
-        // if () {
-        //     scDetected = true;
-        // }
     } else {
         return; // ERROR
     }
@@ -501,8 +520,9 @@ async function saveTweetToDatabase(
             },
             body: JSON.stringify({
                 tweetText: tweetText,
-                scanned: scanned,
-                scDetected: scDetected,
+                userScanned: userScanned,
+                scDetected: SC_DETECTED,
+                openAIResponse: openAIResponse,
                 tweetID: MY_TWEET_ID,
             }),
         });
