@@ -264,7 +264,7 @@ function buildTwistApp() {
                 switch (currentPageIndex) {
                     case 1:
                         try {
-                            nextPageIndex = await sendTweetToOpenAI(true);
+                            nextPageIndex = await sendTweetToOpenAI();
                         } catch (error) {
                             console.error(error);
                             nextPageIndex = 7;
@@ -280,7 +280,7 @@ function buildTwistApp() {
                         break;
                     case 2:
                         try {
-                            nextPageIndex = await sendTweetToOpenAI(true);
+                            nextPageIndex = await sendTweetToOpenAI();
                         } catch (error) {
                             console.error(error);
                             nextPageIndex = 7;
@@ -309,9 +309,9 @@ function buildTwistApp() {
             }
 
             async function showSkipAheadPage() {
+                let scInt = 0;
                 try {
-                    scInt = await sendTweetToOpenAI(false);
-                    console.log("scInt: " + scInt);
+                    scInt = await sendTweetToOpenAI();
                 } catch (error) {
                     console.error(error);
                     return;
@@ -343,93 +343,60 @@ function buildTwistApp() {
     });
 }
 
-async function sendTweetToOpenAI(showResponse) {
-    const elm = await waitForElm(".twist-page");
-    const activePage = document.querySelector(".twist-page.active");
-    const textInput = document.getElementById("textInput").value.trim();
-    const responseElement = document.getElementById("response");
-
+async function sendTweetToOpenAI() {
     try {
+        const activePage = document.querySelector(".twist-page.active");
+        const textInput = document.getElementById("textInput").value.trim();
+        const responseElement = document.getElementById("response");
+
         if (
-            activePage != null &&
-            (activePage.id === "page2" || activePage.id === "page1")
+            !activePage ||
+            (activePage.id !== "page2" && activePage.id !== "page1")
         ) {
-            if (textInput.length > 3) {
-                let apiPrompt = "";
+            throw new Error("Invalid page state");
+        }
 
-                try {
-                    apiPrompt = await createPrompt(textInput);
-                } catch (error) {
-                    responseElement.innerText =
-                        "Error communicating with OpenAI";
-                    return 7;
-                }
+        if (textInput.length <= 3) {
+            throw new Error("Tweet was too short to communicate with OpenAI");
+        }
 
-                try {
-                    const response = await fetch(
-                        "http://localhost:3000/openai",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ text: apiPrompt }),
-                        }
-                    );
+        const apiPrompt = await createPrompt(textInput);
 
-                    const jsonResponse = await response.json();
-                    responseElement.innerText = jsonResponse.response;
+        const response = await fetch("http://localhost:3000/openai", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text: apiPrompt }),
+        });
 
-                    if (showResponse) {
-                        if (responseElement.innerText.startsWith("No")) {
-                            return 3;
-                        } else if (
-                            responseElement.innerText.startsWith("Yes")
-                        ) {
-                            const topicsList =
-                                document.getElementById("topTopics");
-                            let temp = responseElement.innerText.trim();
-                            const index = temp.indexOf("1");
-                            if (index !== -1) {
-                                temp = temp.substring(index);
-                                topicsList.innerText = temp;
-                                return 4;
-                            } else {
-                                responseElement.innerText =
-                                    "Error communicating with OpenAI";
-                                return 7;
-                            }
-                        } else {
-                            responseElement.innerText =
-                                "Error communicating with OpenAI";
-                            return 7;
-                        }
-                    } else {
-                        if (responseElement.innerText.startsWith("No")) {
-                            return 4;
-                        } else {
-                            return 3;
-                        }
-                    }
-                } catch (error) {
-                    responseElement.innerText =
-                        "Error communicating with OpenAI";
-                    return 7;
-                }
+        if (!response.ok) {
+            throw new Error("Failed to communicate with OpenAI");
+        }
+
+        const jsonResponse = await response.json();
+        const responseText = (responseElement.innerText =
+            jsonResponse.response);
+
+        if (responseText.startsWith("No")) {
+            return 3;
+        } else if (responseText.startsWith("Yes")) {
+            const topicsList = document.getElementById("topTopics");
+            const index = responseText.indexOf("1");
+            if (index !== -1) {
+                topicsList.innerText = responseText.substring(index);
+                return 4;
             } else {
-                responseElement.innerText =
-                    "Tweet was too short to communicate with OpenAI";
-                return 3;
+                throw new Error("Invalid response from OpenAI");
             }
+        } else {
+            throw new Error("Invalid response from OpenAI");
         }
     } catch (error) {
-        console.error("Error in sendTweetToOpenAI:", error);
+        console.error("Error in sendTweetToOpenAI:", error.message);
         responseElement.innerText = "Error communicating with OpenAI";
         return 7;
     }
-
-    responseElement.innerText = "Error communicating with OpenAI";
-    return 7;
 }
 
 async function createPrompt(tweetText) {
@@ -504,6 +471,10 @@ async function saveTweetToDatabase(
         }
     } else if (currentPageIndex == 5) {
         userScanned = true;
+        if (lastPageIndex == 4) {
+            scDetected = true;
+        }
+    } else if (currentPageIndex == 6) {
         if (lastPageIndex == 4) {
             scDetected = true;
         }

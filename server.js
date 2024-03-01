@@ -107,8 +107,10 @@ app.post("/save-revised-tweet", jsonParser, async (req, res) => {
     }
 });
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient("mongodb://localhost:27017/twist");
+const client = new MongoClient(
+    "mongodb://localhost:27017/twist?directConnection=true"
+);
+
 let db;
 let tweets;
 
@@ -122,11 +124,12 @@ async function run() {
             "Pinged your deployment. You successfully connected to MongoDB!"
         );
 
-        // Send a ping to confirm a successful connection
-        db = await client.db("twist");
+        // Get the reference to the database and collection
+        db = client.db("twist");
         tweets = db.collection("tweets");
         if (tweets == null) {
-            tweets = db.createCollection("tweets");
+            // If the collection doesn't exist, create it
+            tweets = await db.createCollection("tweets");
             console.log("Tweets collection does not exist so created");
         }
     } finally {
