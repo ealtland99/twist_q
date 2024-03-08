@@ -5,7 +5,12 @@ function initializePrompts(dataset) {
     const datasetPath = `prompts${dataset}.txt`;
     // Read the dataset file and set the prompt
     return fetch(datasetPath)
-        .then((response) => response.text())
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Error fetching prompts");
+            }
+            return response.text();
+        })
         .then((data) => {
             promptsArray = data
                 .split("\n")

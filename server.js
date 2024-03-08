@@ -15,10 +15,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 var jsonParser = bodyParser.json();
 
-app.get("/:dataset", (req, res) => {
-    res.sendFile(path.join(__dirname + "/index.html"));
-});
-
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
 });

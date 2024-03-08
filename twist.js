@@ -23,7 +23,7 @@ function waitForElm(selector) {
     });
 }
 
-function buildTwistApp() {
+function buildTwistApp(nextDataset) {
     // These will be different on X vs quantitative study server so creating variables for them
     const twitterBoxName = ".twitterBoxName";
     const twitterPostButton = ".twitterPostButton";
@@ -241,12 +241,24 @@ function buildTwistApp() {
                         document.getElementById("response").innerText = "";
                         const newPrompt = getNextPrompt();
                         if (newPrompt == "") {
-                            // TODO Go to all done page
-                            console.log("ALL DONE WITH PART B OF STUDY!");
-
-                            // Temp fix
-                            document.getElementById("promptText").textContent =
-                                "ALL DONE WITH PART B OF THE STUDY!\n <link to next page>";
+                            let link = "";
+                            switch (nextDataset) {
+                                case "1":
+                                    link =
+                                        "TODO INSERT LINK TO PART C DS1 HERE";
+                                    break;
+                                case "2":
+                                    link =
+                                        "TODO INSERT LINK TO PART C DS2 HERE";
+                                    break;
+                                case "3":
+                                    link =
+                                        "TODO INSERT LINK TO PART C DS3 HERE";
+                                    break;
+                            }
+                            document.getElementById("promptText").innerHTML =
+                                "ALL DONE WITH PART B OF THE STUDY! <br><br><br>" +
+                                link;
                             tweetContainer.style.display = "none";
                         } else {
                             document.getElementById("promptText").textContent =

@@ -21,18 +21,20 @@
   <script type="text/javascript" src="prompts.js"></script>
   <script type="text/javascript" src="twist.js"></script>
   <script>
-    // Extract dataset parameter from URL
-    const dataset = window.location.pathname.split("/")[1];
+    // Extract dataset parameters from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currDataset = urlParams.get('currDataset');
+    const nextDataset = urlParams.get('nextDataset');
 
     function initialize() {
-        initializePrompts(dataset)
+        initializePrompts(currDataset)
           .then(() => {
             const prompt = getNextPrompt();
             document.getElementById("promptText").textContent = prompt;
           })
           .catch((error) => console.error("Error initializing prompts:", error));
         
-        buildTwistApp();
+        buildTwistApp(nextDataset);
     }
   </script>
 </body>
