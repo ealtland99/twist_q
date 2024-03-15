@@ -44,9 +44,11 @@ app.post("/save-original-tweet", jsonParser, async (req, res) => {
         // Get tweet text from the request body
         const tweetText = req.body.tweetText;
         const prompt = req.body.prompt;
+        const prolificID = req.body.prolificID;
 
         insertTweetRow(
             {
+                prolificID: prolificID,
                 prompt: prompt,
                 originalTweet: tweetText,
                 userScanned: false,

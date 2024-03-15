@@ -23,8 +23,54 @@
   <script>
     // Extract dataset parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const currDataset = urlParams.get('currDataset');
-    const nextDataset = urlParams.get('nextDataset');
+    const PROLIFIC_ID = urlParams.get('PROLIFIC_ID');
+    const lastDataset = urlParams.get('lastDataset');
+    let currDataset; //= urlParams.get('currDataset');
+    let nextDataset; //= urlParams.get('nextDataset');
+
+    let datasets = [1, 2, 3];
+
+    function removeItemOnce(arr, value) {
+      value = Number(value);
+      var index = arr.indexOf(value);
+      if (index > -1) {
+        arr.splice(index, 1);
+      }
+      console.log("arr: " + arr);
+      return arr;
+    }
+
+    function shuffleArray(array) {
+      array = array.sort(() => Math.random() - 0.5); // Shuffle the array
+      return array;
+    }
+
+    if ((lastDataset == null) || (lastDataset != 1 && lastDataset != 2 && lastDataset != 3)) {
+      console.error("ERROR: Invalid lastDataset value");
+      throw new Error("Invalid lastDataset value");
+    }
+
+    if (currDataset == null) {
+      console.log(datasets);
+      removeItemOnce(datasets, lastDataset);
+      console.log(datasets);
+      shuffleArray(datasets);
+      console.log(datasets);
+      currDataset = datasets[0];
+      nextDataset = datasets[1];
+    }
+    // if (currDataset != 1 && currDataset != 2 && currDataset != 3) {
+    //   console.error("ERROR: Invalid currDataset value");
+    //   throw new Error("Invalid currDataset value");
+    // }
+
+    // if (nextDataset == null) {
+    //   nextDataset = 6 - lastDataset - currDataset;
+    // }
+    // if (nextDataset != 1 && nextDataset != 2 && nextDataset != 3) {
+    //   console.error("ERROR: Invalid nextDataset value");
+    //   throw new Error("Invalid nextDataset value");
+    // }
 
     function initialize() {
         initializePrompts(currDataset)
@@ -34,7 +80,7 @@
           })
           .catch((error) => console.error("Error initializing prompts:", error));
         
-        buildTwistApp(nextDataset);
+        buildTwistApp(nextDataset, PROLIFIC_ID);
     }
   </script>
 </body>

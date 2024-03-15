@@ -23,7 +23,7 @@ function waitForElm(selector) {
     });
 }
 
-function buildTwistApp(nextDataset) {
+function buildTwistApp(nextDataset, PROLIFIC_ID) {
     // These will be different on X vs quantitative study server so creating variables for them
     const twitterBoxName = ".twitterBoxName";
     const twitterPostButton = ".twitterPostButton";
@@ -206,7 +206,8 @@ function buildTwistApp(nextDataset) {
                         currPrompt,
                         tweetText,
                         currentPageIndex,
-                        lastPageIndex
+                        lastPageIndex,
+                        PROLIFIC_ID
                     );
 
                     if (currentPageIndex == 0) {
@@ -245,20 +246,25 @@ function buildTwistApp(nextDataset) {
                             switch (nextDataset) {
                                 case "1":
                                     link =
-                                        "TODO INSERT LINK TO PART C DS1 HERE";
+                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Q7?custom1=";
                                     break;
                                 case "2":
                                     link =
-                                        "TODO INSERT LINK TO PART C DS2 HERE";
+                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Rm?custom1=";
                                     break;
                                 case "3":
                                     link =
-                                        "TODO INSERT LINK TO PART C DS3 HERE";
+                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Ry?custom1=";
                                     break;
                             }
+                            link = link + PROLIFIC_ID;
                             document.getElementById("promptText").innerHTML =
-                                "ALL DONE WITH PART B OF THE STUDY! <br><br><br>" +
-                                link;
+                                "Thank you for completing part B of the study.  Please continue to part C by pressing the link below. <br><br><br>" +
+                                "<a href='" +
+                                link +
+                                "' target='_blank'>" +
+                                link +
+                                "</a>";
                             tweetContainer.style.display = "none";
                         } else {
                             document.getElementById("promptText").textContent =
@@ -450,7 +456,8 @@ async function saveTweetToDatabase(
     currPrompt,
     tweetText,
     currentPageIndex,
-    lastPageIndex
+    lastPageIndex,
+    PROLIFIC_ID
 ) {
     let userScanned = false;
     const openAIResponse = document.getElementById("response").innerText;
@@ -464,6 +471,7 @@ async function saveTweetToDatabase(
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    prolificID: PROLIFIC_ID,
                     prompt: currPrompt,
                     tweetText: tweetText,
                 }),
