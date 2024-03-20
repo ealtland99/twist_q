@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import "dotenv/config";
 import OpenAI from "openai";
 import { MongoClient, ObjectId } from "mongodb";
-
+//Sang
 const openai = new OpenAI();
 const app = express();
 const port = 8080;
