@@ -9,7 +9,7 @@ import { MongoClient, ObjectId } from "mongodb";
 
 const openai = new OpenAI();
 const app = express();
-const port = 3000;
+const port = 8080;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(__dirname), express.static("clientSide"));

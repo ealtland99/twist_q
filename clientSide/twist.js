@@ -413,7 +413,7 @@ async function sendTweetToOpenAI() {
 
         const apiPrompt = await createPrompt(textInput);
 
-        const response = await fetch("http://localhost:3000/openai", {
+        const response = await fetch("/openai", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
