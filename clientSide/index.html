@@ -9,7 +9,10 @@
 </head>
 <body onload="initialize()">
   <h1>Fake Twitter</h1>
-  <p class="firstPage"> Welcome to Part B of the study.  A prompt will be given and you will write a post responding to that situation to the best of your ability.  Your responses should not include any personal information and should be fictional, but try to connect to the prompt as much as possible. <br> <br> Please click the button to consent and continue the study. </p>
+  <div class="firstPageBox">
+    <p> Welcome to Part B of the study.  A prompt will be given and you will write a post responding to that situation to the best of your ability.  Your responses should not include any personal information and should be fictional, but try to connect to the prompt as much as possible. <br> <br> Please enter your Prolific ID, then click the button to consent and continue the study. </p>
+    <textarea id="prolificIDinput" rows="1" cols="10"></textarea>
+  </div>
   <p class="breakPage" style="display: block; opacity: 0;"> You have finished responding to this prompt.  Click the button below to continue to the next prompt. </p>
   <button class="resumePromptsButton action_btn"> Continue </button>
   <p class="prompt" id="promptText" style="display: block; opacity: 0;">Write a tweet about ____:</p>
@@ -26,10 +29,9 @@
   <script>
     // Extract dataset parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const PROLIFIC_ID = urlParams.get('PROLIFIC_ID');
     const lastDataset = urlParams.get('lastDataset');
     let currDataset = urlParams.get('currDataset');
-    let nextDataset; //= urlParams.get('nextDataset');
+    let nextDataset;
 
     let datasets = [1, 2, 3];
 
@@ -39,7 +41,6 @@
       if (index > -1) {
         arr.splice(index, 1);
       }
-      console.log("arr: " + arr);
       return arr;
     }
 
@@ -54,11 +55,8 @@
     }
 
     if (currDataset == null || currDataset == 0) {
-      console.log(datasets);
       removeItemOnce(datasets, lastDataset);
-      console.log(datasets);
       shuffleArray(datasets);
-      console.log(datasets);
       if (currDataset != 0) { //this allows me to bypass 10/12 prompts when testing
         currDataset = datasets[0];
       }
@@ -66,39 +64,52 @@
     }
 
     function initialize() {
-        initializePrompts(currDataset)
-          .then(() => {
-            const prompt = getNextPrompt();
-            document.getElementById("promptText").textContent = prompt;
-          })
-          .catch((error) => console.error("Error initializing prompts:", error));
-        
-        buildTwistApp(nextDataset, PROLIFIC_ID);
+      initializePrompts(currDataset)
+        .then(() => {
+          const prompt = getNextPrompt();
+          document.getElementById("promptText").textContent = prompt;
+        })
+        .catch((error) => console.error("Error initializing prompts:", error));
+
+      // Check if Prolific ID is present in URL params
+      const PROLIFIC_ID_URL = urlParams.get('PROLIFIC_ID');
+      if (PROLIFIC_ID_URL) {
+        // If Prolific ID is present, fill the textbox with it
+        document.getElementById("prolificIDinput").value = PROLIFIC_ID_URL;
+      }
     }
-  </script>
-  <script>
-    const firstPageContainer = document.querySelector(".firstPage");
+  
+    const firstPageContainer = document.querySelector(".firstPageBox");
     const breakPageContainer = document.querySelector(".breakPage");
     const continueButton = document.querySelector(".resumePromptsButton");
     const promptContainer = document.getElementById("promptText");
     const twistAppContainer = document.querySelector(".twitterBoxName");
 
     continueButton.addEventListener("click", function () {
-        // Hide break page and continue with the next prompt
-        firstPageContainer.style.display = "none";
-        firstPageContainer.style.opacity = "0";
+      let PROLIFIC_ID = document.getElementById("prolificIDinput").value;
+      PROLIFIC_ID = PROLIFIC_ID.trim();
+      if (PROLIFIC_ID == "") {
+        console.error("ERROR: Invalid Prolific ID value");
+        throw new Error("Invalid Prolific ID value");
+      }
 
-        breakPageContainer.style.display = "none";
-        breakPageContainer.style.opacity = "0";
+      buildTwistApp(nextDataset, PROLIFIC_ID);
 
-        continueButton.style.display = "none";
-        continueButton.style.opacity = "0";
+      // Hide break page and continue with the first prompt
+      firstPageContainer.style.display = "none";
+      firstPageContainer.style.opacity = "0";
 
-        promptContainer.style.display = "block";
-        promptContainer.style.opacity = "1";
+      breakPageContainer.style.display = "none";
+      breakPageContainer.style.opacity = "0";
 
-        twistAppContainer.style.display = "flex";
-        twistAppContainer.style.opacity = "1";
+      continueButton.style.display = "none";
+      continueButton.style.opacity = "0";
+
+      promptContainer.style.display = "block";
+      promptContainer.style.opacity = "1";
+
+      twistAppContainer.style.display = "flex";
+      twistAppContainer.style.opacity = "1";
     });
   </script>
 </body>
