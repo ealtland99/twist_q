@@ -7,6 +7,7 @@ import "dotenv/config";
 import OpenAI from "openai";
 import { MongoClient, ObjectId } from "mongodb";
 //Sang
+// was here
 const openai = new OpenAI();
 const app = express();
 const port = 8080;
