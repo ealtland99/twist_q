@@ -6,8 +6,11 @@ import { fileURLToPath } from "url";
 import "dotenv/config";
 import OpenAI from "openai";
 import { MongoClient, ObjectId } from "mongodb";
-//Sang
-// was here
+//const fs = require('fs');
+import fs from "fs";
+//const https = require('https');
+import https from "https";
+
 const openai = new OpenAI();
 const app = express();
 const port = 8080;
@@ -15,9 +18,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(__dirname), express.static("clientSide"));
 var jsonParser = bodyParser.json();
-
+/*
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
+});
+*/
+
+const httpsOptions = {
+    key: fs.readFileSync('/home/sangwonlee/twcwnudge/twist_q/cert/key.pem'),
+    cert: fs.readFileSync('/home/sangwonlee/twcwnudge/twist_q/cert/twcwnudge.cs.vt.edu.crt')
+};
+
+https.createServer(httpsOptions, app).listen(port, () => {
+    console.log(`Server started on https://localhost:${port}`);
 });
 
 // Endpoint for handling OpenAI requests
