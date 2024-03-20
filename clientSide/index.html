@@ -9,8 +9,11 @@
 </head>
 <body onload="initialize()">
   <h1>Fake Twitter</h1>
-  <p class="prompt" id="promptText">Write a tweet about ____:</p>
-  <div class="twitterBoxName">
+  <p class="firstPage"> Welcome to Part B of the study.  A prompt will be given and you will write a post responding to that situation to the best of your ability.  Your responses should not include any personal information and should be fictional, but try to connect to the prompt as much as possible. <br> <br> Please click the button to consent and continue the study. </p>
+  <p class="breakPage" style="display: block; opacity: 0;"> You have finished responding to this prompt.  Click the button below to continue to the next prompt. </p>
+  <button class="resumePromptsButton action_btn"> Continue </button>
+  <p class="prompt" id="promptText" style="display: block; opacity: 0;">Write a tweet about ____:</p>
+  <div class="twitterBoxName" style="display: block; opacity: 0;">
     <div>
       <textarea id="textInput" rows="22" cols="75" placeholder="Enter your Tweet text here..."></textarea>
       <button class="twitterPostButton action_btn">Post My Tweet</button>
@@ -25,7 +28,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const PROLIFIC_ID = urlParams.get('PROLIFIC_ID');
     const lastDataset = urlParams.get('lastDataset');
-    let currDataset; //= urlParams.get('currDataset');
+    let currDataset = urlParams.get('currDataset');
     let nextDataset; //= urlParams.get('nextDataset');
 
     let datasets = [1, 2, 3];
@@ -50,27 +53,17 @@
       throw new Error("Invalid lastDataset value");
     }
 
-    if (currDataset == null) {
+    if (currDataset == null || currDataset == 0) {
       console.log(datasets);
       removeItemOnce(datasets, lastDataset);
       console.log(datasets);
       shuffleArray(datasets);
       console.log(datasets);
-      currDataset = datasets[0];
+      if (currDataset != 0) { //this allows me to bypass 10/12 prompts when testing
+        currDataset = datasets[0];
+      }
       nextDataset = datasets[1];
     }
-    // if (currDataset != 1 && currDataset != 2 && currDataset != 3) {
-    //   console.error("ERROR: Invalid currDataset value");
-    //   throw new Error("Invalid currDataset value");
-    // }
-
-    // if (nextDataset == null) {
-    //   nextDataset = 6 - lastDataset - currDataset;
-    // }
-    // if (nextDataset != 1 && nextDataset != 2 && nextDataset != 3) {
-    //   console.error("ERROR: Invalid nextDataset value");
-    //   throw new Error("Invalid nextDataset value");
-    // }
 
     function initialize() {
         initializePrompts(currDataset)
@@ -82,6 +75,31 @@
         
         buildTwistApp(nextDataset, PROLIFIC_ID);
     }
+  </script>
+  <script>
+    const firstPageContainer = document.querySelector(".firstPage");
+    const breakPageContainer = document.querySelector(".breakPage");
+    const continueButton = document.querySelector(".resumePromptsButton");
+    const promptContainer = document.getElementById("promptText");
+    const twistAppContainer = document.querySelector(".twitterBoxName");
+
+    continueButton.addEventListener("click", function () {
+        // Hide break page and continue with the next prompt
+        firstPageContainer.style.display = "none";
+        firstPageContainer.style.opacity = "0";
+
+        breakPageContainer.style.display = "none";
+        breakPageContainer.style.opacity = "0";
+
+        continueButton.style.display = "none";
+        continueButton.style.opacity = "0";
+
+        promptContainer.style.display = "block";
+        promptContainer.style.opacity = "1";
+
+        twistAppContainer.style.display = "flex";
+        twistAppContainer.style.opacity = "1";
+    });
   </script>
 </body>
 </html>

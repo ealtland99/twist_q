@@ -34,6 +34,10 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
         ) {
             const tweetContainer = document.querySelector(twitterBoxName);
             const postBtnContainer = document.querySelector(twitterPostButton);
+            const breakPageContainer = document.querySelector(".breakPage");
+            const continueButton = document.querySelector(
+                ".resumePromptsButton"
+            );
 
             // Create the elements and set their properties - all the HTML stuff
             const twistAppContainer = document.createElement("div");
@@ -193,8 +197,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
             // Adds event listener to the post button click so TWIST app shows on page
             postBtnContainer.addEventListener("click", async function () {
-                let currPrompt =
-                    document.getElementById("promptText").textContent;
+                const promptContainer = document.getElementById("promptText");
+                let currPrompt = promptContainer.textContent;
                 currPrompt = currPrompt.split(": ")[1];
 
                 let tweetText = document.getElementById("textInput").value;
@@ -243,8 +247,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         const newPrompt = getNextPrompt();
                         if (newPrompt == "") {
                             let link = "";
+                            console.log("nextDataset: " + nextDataset);
                             switch (nextDataset) {
                                 case "1":
+                                    link =
+                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Q7?custom1=";
+                                    break;
+                                case 1:
                                     link =
                                         "https://virginiatech.questionpro.com/t/AWDvFZ11Q7?custom1=";
                                     break;
@@ -252,13 +261,26 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                     link =
                                         "https://virginiatech.questionpro.com/t/AWDvFZ11Rm?custom1=";
                                     break;
+                                case 2:
+                                    link =
+                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Rm?custom1=";
+                                    break;
                                 case "3":
                                     link =
                                         "https://virginiatech.questionpro.com/t/AWDvFZ11Ry?custom1=";
                                     break;
+                                case 3:
+                                    link =
+                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Ry?custom1=";
+                                    break;
+                                default:
+                                    console.log(
+                                        "ERROR WITH NEXT DATASET VALUE!"
+                                    );
+                                    break;
                             }
                             link = link + PROLIFIC_ID;
-                            document.getElementById("promptText").innerHTML =
+                            promptContainer.innerHTML =
                                 "Thank you for completing part B of the study.  Please continue to part C by pressing the link below. <br><br><br>" +
                                 "<a href='" +
                                 link +
@@ -267,8 +289,19 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                 "</a>";
                             tweetContainer.style.display = "none";
                         } else {
-                            document.getElementById("promptText").textContent =
-                                newPrompt;
+                            promptContainer.textContent = newPrompt;
+
+                            breakPageContainer.style.display = "block";
+                            breakPageContainer.style.opacity = "1";
+
+                            continueButton.style.display = "block";
+                            continueButton.style.opacity = "1";
+
+                            promptContainer.style.display = "none";
+                            promptContainer.style.opacity = "0";
+
+                            tweetContainer.style.display = "none";
+                            tweetContainer.style.opacity = "0";
                         }
                     }
                 } catch (error) {

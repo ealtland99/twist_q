@@ -86,6 +86,7 @@ h1 {
     border: 0;
     padding: 10px;
     border-radius: 10px;
+    margin: auto;
 }
 
 .action_btn:disabled,
