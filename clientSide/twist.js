@@ -474,7 +474,7 @@ async function createPrompt(tweetText) {
             "\n\n Based on this sensitive topic list, does the following tweet contain any of those topics?\n\n" +
             tweetText +
             "\n\nPlease answer with only a 'no' or if the answer is 'yes', respond with a 'yes' and a ranking of the top 5 topics the tweet exhibits with 1 as the most likely and 5 as the fifth likely.  The formatting of the ranking should look like this: '1. Violence, 2. Death, 3. Sociopolitical, 4. Crime, 5. Stigma'" +
-            "\nAfter this ranking, include a sample trigger or content warning to complete this sentence and fill in the blank with ONLY 1-5 words: 'Here's what a trigger or content warning may look like: 'TW/CW: <blank>''";
+            "\nAfter this ranking, include 2-3 sample trigger or content warnings to complete this sentence and fill in the blank with ONLY 1-5 words: 'Here's what a trigger or content warning may look like: 'TW/CW: <blank>''";
 
         return prompt;
     } catch (error) {
