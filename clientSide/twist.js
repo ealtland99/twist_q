@@ -24,20 +24,15 @@ function waitForElm(selector) {
 }
 
 function buildTwistApp(nextDataset, PROLIFIC_ID) {
-    // These will be different on X vs quantitative study server so creating variables for them
-    const twitterBoxName = ".twitterBoxName";
-    const twitterPostButton = ".twitterPostButton";
-
-    waitForElm(twitterBoxName).then((elm) => {
+    waitForElm(".twitterBoxName").then((elm) => {
         if (
             document.getElementsByClassName("twist-extension-root")[0] == null
         ) {
-            const tweetContainer = document.querySelector(twitterBoxName);
-            const postBtnContainer = document.querySelector(twitterPostButton);
-            const breakPageContainer = document.querySelector(".breakPage");
-            const continueButton = document.querySelector(
-                ".resumePromptsButton"
-            );
+            const tweetContainer = document.querySelector(".twitterBoxName");
+            const postBtnContainer =
+                document.querySelector(".twitterPostButton");
+            const breakPageContainer = document.querySelector(".breakPageBox");
+            const mainPageContainer = document.querySelector(".mainBox");
 
             // Create the elements and set their properties - all the HTML stuff
             const twistAppContainer = document.createElement("div");
@@ -46,11 +41,10 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             const twistApp = document.createElement("div");
             twistApp.classList.add("TwistApp");
 
-            const twistAppHeader = document.createElement("div");
-            twistAppHeader.classList.add("TwistApp-header");
-            twistAppHeader.innerHTML =
-                "<h1> TWIST: Trigger Warning Includer for Sensitive Topics </h1>";
-            twistApp.appendChild(twistAppHeader);
+            // const twistAppHeader = document.createElement("div");
+            // twistAppHeader.classList.add("TwistApp-header");
+            // twistAppHeader.innerHTML = "<h1> TWIST: Trigger Warning Includer for Sensitive Topics </h1>";
+            // twistApp.appendChild(twistAppHeader);
 
             const twistAppBody = document.createElement("div");
             twistAppBody.classList.add("TwistApp-body");
@@ -131,13 +125,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     currentPageIndex = index;
                     switch (currentPageIndex) {
                         case 0:
-                            postBtnContainer.disabled = false;
+                            postBtnContainer.style.display = "block";
                             prevBtn.style.display = "none";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             break;
                         case 1:
-                            postBtnContainer.disabled = true;
+                            postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
                             nextBtn.style.display = "block";
@@ -147,7 +141,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.textContent = "No";
                             break;
                         case 2:
-                            postBtnContainer.disabled = true;
+                            postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
                             nextBtn.style.display = "block";
@@ -157,7 +151,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.textContent = "No";
                             break;
                         case 3:
-                            postBtnContainer.disabled = true;
+                            postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
                             nextBtn.style.display = "block";
@@ -166,7 +160,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "none";
                             break;
                         case 4:
-                            postBtnContainer.disabled = true;
+                            postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
                             nextBtn.style.display = "block";
@@ -175,19 +169,19 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "none";
                             break;
                         case 5:
-                            postBtnContainer.disabled = false;
+                            postBtnContainer.style.display = "block";
                             prevBtn.style.display = "block";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             break;
                         case 6:
-                            postBtnContainer.disabled = false;
+                            postBtnContainer.style.display = "block";
                             prevBtn.style.display = "block";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             break;
                         default:
-                            postBtnContainer.disabled = false;
+                            postBtnContainer.style.display = "block";
                             prevBtn.style.display = "none";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
@@ -294,14 +288,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             breakPageContainer.style.display = "block";
                             breakPageContainer.style.opacity = "1";
 
-                            continueButton.style.display = "block";
-                            continueButton.style.opacity = "1";
-
                             promptContainer.style.display = "none";
                             promptContainer.style.opacity = "0";
 
                             tweetContainer.style.display = "none";
                             tweetContainer.style.opacity = "0";
+
+                            mainPageContainer.style.border = "none";
                         }
                     }
                 } catch (error) {
@@ -384,8 +377,15 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             twistAppContainer.appendChild(twistApp);
             twistAppContainer.style.display = "block";
 
-            // Append the elements to the target on Twitter page
-            tweetContainer.append(twistAppContainer);
+            // Append the TWIST app element to the end of parent container
+            //tweetContainer.append(twistAppContainer);
+
+            // Add the TWIST app element to the page before post button in parent container
+            var referenceNode = document.getElementById("textInput");
+            tweetContainer.insertBefore(
+                twistAppContainer,
+                referenceNode.nextSibling
+            );
 
             //console.log("TWIST APP HAS BEEN CREATED AND ADDED TO PAGE");
         } else {

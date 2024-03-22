@@ -8,22 +8,24 @@
   <title>TWIST for the Quantitative Study</title>
 </head>
 <body onload="initialize()">
-  <h1>Fake Twitter</h1>
-  <div class="firstPageBox">
+  <h1>Prolific TW/CW Nudge Study</h1>
+  <div class="bodyBox firstPageBox">
     <p> Welcome to Part B of the study.  A prompt will be given and you will write a post responding to that situation to the best of your ability.  Your responses should not include any personal information and should be fictional, but try to connect to the prompt as much as possible. <br> <br> Please enter your Prolific ID, then click the button to consent and continue the study. </p>
     <textarea id="prolificIDinput" rows="1" cols="10"></textarea>
   </div>
-  <p class="breakPage" style="display: block; opacity: 0;"> You have finished responding to this prompt.  Click the button below to continue to the next prompt. </p>
-  <button class="resumePromptsButton action_btn"> Continue </button>
-  <p class="prompt" id="promptText" style="display: block; opacity: 0;">Write a tweet about ____:</p>
-  <div class="twitterBoxName" style="display: block; opacity: 0;">
-    <div>
-      <textarea id="textInput" rows="22" cols="75" placeholder="Enter your Tweet text here..."></textarea>
+  <div class="bodyBox breakPageBox">
+    <p class="breakPage" style="display: block; opacity: 0;"> You have finished responding to this prompt.  Click the button below to continue to the next prompt. </p>
+    <button class="resumePromptsButton action_btn"> Continue </button>
+  </div>
+  <div class="bodyBox mainBox">
+    <p class="prompt" id="promptText" style="display: block; opacity: 0;">Write a tweet about ____:</p>
+    <div class="twitterBoxName" style="display: block; opacity: 0;">
+      <textarea id="textInput" rows="15" cols="75" placeholder="Enter your Tweet text here..."></textarea>
       <button class="twitterPostButton action_btn">Post My Tweet</button>
     </div>
   </div>
   <p id="response" style="display: block; opacity: 0;"></p>
-
+  
   <script type="text/javascript" src="prompts.js"></script>
   <script type="text/javascript" src="twist.js"></script>
   <script>
@@ -80,8 +82,10 @@
     }
   
     const firstPageContainer = document.querySelector(".firstPageBox");
+    const breakPageBoxContainer = document.querySelector(".breakPageBox");
     const breakPageContainer = document.querySelector(".breakPage");
     const continueButton = document.querySelector(".resumePromptsButton");
+    const mainPageContainer = document.querySelector(".mainBox");
     const promptContainer = document.getElementById("promptText");
     const twistAppContainer = document.querySelector(".twitterBoxName");
 
@@ -99,17 +103,19 @@
       firstPageContainer.style.display = "none";
       firstPageContainer.style.opacity = "0";
 
-      breakPageContainer.style.display = "none";
-      breakPageContainer.style.opacity = "0";
+      breakPageBoxContainer.style.display = "none";
+      breakPageBoxContainer.style.opacity = "0";
 
-      continueButton.style.display = "none";
-      continueButton.style.opacity = "0";
+      breakPageContainer.style.display = "block";
+      breakPageContainer.style.opacity = "1";
 
       promptContainer.style.display = "block";
       promptContainer.style.opacity = "1";
 
       twistAppContainer.style.display = "flex";
       twistAppContainer.style.opacity = "1";
+
+      mainPageContainer.style.border = "4px solid var(--color-palette-blue)";
     });
   </script>
 </body>
