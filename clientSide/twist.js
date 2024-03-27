@@ -110,9 +110,16 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             skipBtn.textContent = "Skip";
             skipBtn.id = "skipBtn";
 
+            // Create copy to clipboard button
+            const copyBtn = document.createElement("button");
+            copyBtn.classList.add("action_btn");
+            copyBtn.textContent = "Copy Warning to Clipboard";
+            copyBtn.id = "copyBtn";
+
             prevBtn.addEventListener("click", showPreviousPage);
             nextBtn.addEventListener("click", showNextPage);
             skipBtn.addEventListener("click", showSkipAheadPage);
+            copyBtn.addEventListener("click", copyWarning);
 
             // Appends the pagination buttons to the twistAppBody
             const twistButtons = document.createElement("div");
@@ -120,6 +127,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             twistButtons.appendChild(prevBtn);
             twistButtons.appendChild(nextBtn);
             twistButtons.appendChild(skipBtn);
+            twistButtons.appendChild(copyBtn);
             twistPageContainer.appendChild(twistButtons);
 
             // Sets up the functionality for multiple pages in the design
@@ -140,12 +148,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     lastPageIndex = currentPageIndex;
                     currentPageIndex = index;
                     switch (currentPageIndex) {
-                        case PAGES.START_PAGE:
-                            postBtnContainer.style.display = "block";
-                            prevBtn.style.display = "none";
-                            nextBtn.style.display = "none";
-                            skipBtn.style.display = "none";
-                            break;
                         case PAGES.WARNING_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
@@ -155,6 +157,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                             skipBtn.style.display = "block";
                             skipBtn.textContent = "No";
+
+                            copyBtn.style.display = "none";
                             break;
                         case PAGES.NO_WARNING_PAGE:
                             postBtnContainer.style.display = "none";
@@ -165,42 +169,67 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                             skipBtn.style.display = "block";
                             skipBtn.textContent = "No";
+
+                            copyBtn.style.display = "none";
                             break;
                         case PAGES.SCANNED_NO_SC_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
                             nextBtn.style.display = "block";
-                            nextBtn.textContent = "Got It";
+                            nextBtn.textContent = "Okay, Got It";
 
                             skipBtn.style.display = "none";
+
+                            copyBtn.style.display = "none";
                             break;
                         case PAGES.SCANNED_SC_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
                             nextBtn.style.display = "block";
-                            nextBtn.textContent = "Got It";
+                            nextBtn.textContent = "Okay, Got It";
 
                             skipBtn.style.display = "none";
+
+                            copyBtn.style.display = "block";
                             break;
                         case PAGES.THANKS_PAGE:
                             postBtnContainer.style.display = "block";
+
                             prevBtn.style.display = "block";
+                            if (
+                                lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE
+                            ) {
+                                prevBtn.textContent =
+                                    "Back to Warning Examples";
+                            } else if (
+                                lastPageIndex == PAGES.SCANNED_NO_SC_PAGE
+                            ) {
+                                prevBtn.textContent =
+                                    "Back to Sensitive Content Examples";
+                            }
+
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
+                            copyBtn.style.display = "none";
                             break;
                         case PAGES.YOU_CAN_EDIT_PAGE:
                             postBtnContainer.style.display = "block";
+
                             prevBtn.style.display = "block";
+                            prevBtn.textContent = "Back to Scan";
+
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
+                            copyBtn.style.display = "none";
                             break;
                         default:
                             postBtnContainer.style.display = "block";
                             prevBtn.style.display = "none";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
+                            copyBtn.style.display = "none";
                     }
                 }
             }
@@ -414,6 +443,47 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 }
 
                 showPage(PAGES.YOU_CAN_EDIT_PAGE);
+            }
+
+            function copyWarning() {
+                // Get the text content of the topTopics element
+                var topTopicsText =
+                    document.getElementById("topTopics").textContent;
+
+                // Find the indices of the second and third single quotes
+                var secondQuoteIndex = topTopicsText.indexOf(
+                    "'",
+                    topTopicsText.indexOf("'") + 1
+                );
+                var thirdQuoteIndex = topTopicsText.indexOf(
+                    "'",
+                    secondQuoteIndex + 1
+                );
+
+                // Extract the text between the second and third single quotes
+                var warningText = topTopicsText.substring(
+                    secondQuoteIndex + 1,
+                    thirdQuoteIndex
+                );
+
+                if (warningText != "") {
+                    // Copy the extracted warning text to the clipboard
+                    navigator.clipboard
+                        .writeText(warningText)
+                        .catch((error) => {
+                            console.error(
+                                "Error copying text to clipboard:",
+                                error
+                            );
+                        });
+                } else {
+                    showPage(PAGES.ERROR_PAGE);
+
+                    // If no text within single quotes is found, display an error message
+                    throw new Error(
+                        "Error: Unable to find warning text within single quotes!"
+                    );
+                }
             }
 
             showPage(currentPageIndex);
