@@ -6,9 +6,7 @@ import { fileURLToPath } from "url";
 import "dotenv/config";
 import OpenAI from "openai";
 import { MongoClient, ObjectId } from "mongodb";
-//const fs = require('fs');
 import fs from "fs";
-//const https = require('https');
 import https from "https";
 
 const openai = new OpenAI();
@@ -25,8 +23,10 @@ app.listen(port, () => {
 */
 
 const httpsOptions = {
-    key: fs.readFileSync('/home/sangwonlee/twcwnudge/twist_q/cert/key.pem'),
-    cert: fs.readFileSync('/home/sangwonlee/twcwnudge/twist_q/cert/twcwnudge.cs.vt.edu.crt')
+    key: fs.readFileSync("/home/sangwonlee/twcwnudge/twist_q/cert/key.pem"),
+    cert: fs.readFileSync(
+        "/home/sangwonlee/twcwnudge/twist_q/cert/twcwnudge.cs.vt.edu.crt"
+    ),
 };
 
 https.createServer(httpsOptions, app).listen(port, () => {
@@ -55,20 +55,23 @@ app.post("/openai", jsonParser, async (req, res) => {
 // Endpoint for handling the tweet save to the database
 app.post("/save-original-tweet", jsonParser, async (req, res) => {
     try {
-        // Get tweet text from the request body
-        const tweetText = req.body.tweetText;
-        const prompt = req.body.prompt;
         const prolificID = req.body.prolificID;
+        const prompt = req.body.prompt;
+        const timestamp = req.body.timestamp;
+        const event = req.body.event;
+        const tweetText = req.body.tweetText;
 
         insertTweetRow(
             {
                 prolificID: prolificID,
                 prompt: prompt,
-                originalTweet: tweetText,
-                userScanned: false,
-                scDetected: false,
-                openAIResponse: "",
-                revisedTweet: "",
+                saves: [
+                    {
+                        timestamp: timestamp,
+                        event: event,
+                        tweetText: tweetText,
+                    },
+                ],
             },
             function (data) {
                 writeOKResponse(
@@ -87,20 +90,27 @@ app.post("/save-original-tweet", jsonParser, async (req, res) => {
 // Endpoint for handling the tweet save to the database
 app.post("/save-revised-tweet", jsonParser, async (req, res) => {
     try {
-        // Get tweet text from the request body
+        const tweetID = req.body.tweetID;
+        const timestamp = req.body.timestamp;
+        const event = req.body.event;
         const tweetText = req.body.tweetText;
         const userScanned = req.body.userScanned;
         const scDetected = req.body.scDetected;
         const openAIResponse = req.body.openAIResponse;
-        const tweetID = req.body.tweetID;
 
         updateTweetRow(
             { _id: new ObjectId(tweetID) },
             {
-                revisedTweet: tweetText,
-                userScanned: userScanned,
-                scDetected: scDetected,
-                openAIResponse: openAIResponse,
+                $push: {
+                    saves: {
+                        timestamp: timestamp,
+                        event: event,
+                        tweetText: tweetText,
+                        userScanned: userScanned,
+                        scDetected: scDetected,
+                        openAIResponse: openAIResponse,
+                    },
+                },
             },
             function (err) {
                 if (err) {
@@ -118,6 +128,46 @@ app.post("/save-revised-tweet", jsonParser, async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
+let insertTweetRow = function (data, callback) {
+    tweets.insertOne(data);
+    console.log(
+        "insertTweetRow: Inserted a document into the tweets collection: " +
+            data._id
+    );
+    if (callback) callback(data);
+};
+
+let updateTweetRow = async function (query, update, callback) {
+    try {
+        await tweets.updateOne(query, update);
+
+        console.log("updateTweetRow: Updated a document in tweets");
+        if (callback) callback();
+    } catch (error) {
+        console.error("Error updating tweet:", error);
+        if (callback) callback(error);
+    }
+};
+
+//https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+let writeOKResponse = function (res, message, data) {
+    let obj = {
+        status: "OK",
+        message: message,
+        data: data,
+    };
+    console.log("writeOKResponse: " + message);
+
+    res.writeHead(200, { "Content-type": "application/json" });
+    res.end(JSON.stringify(obj));
+};
+
+let writeBadRequestResponse = function (res, message) {
+    console.log("writeBadRequestResponse: " + message);
+    res.writeHead(400, { "Content-type": "text/plain" });
+    res.end(message);
+};
 
 const client = new MongoClient(
     "mongodb://localhost:27017/twist?directConnection=true"
@@ -150,45 +200,3 @@ async function run() {
     }
 }
 run().catch(console.dir);
-
-let insertTweetRow = function (data, callback) {
-    tweets.insertOne(data);
-    console.log(
-        "insertTweetRow: Inserted a document into the tweets collection: " +
-            data._id
-    );
-    if (callback) callback(data);
-};
-
-let updateTweetRow = async function (query, newvalues, callback) {
-    try {
-        await tweets.updateOne(query, {
-            $set: newvalues,
-        });
-
-        console.log("updateTweetRow: Updated a document in tweets");
-        if (callback) callback();
-    } catch (error) {
-        console.error("Error updating tweet:", error);
-        if (callback) callback(error);
-    }
-};
-
-//https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-let writeOKResponse = function (res, message, data) {
-    let obj = {
-        status: "OK",
-        message: message,
-        data: data,
-    };
-    console.log("writeOKResponse: " + message);
-
-    res.writeHead(200, { "Content-type": "application/json" });
-    res.end(JSON.stringify(obj));
-};
-
-let writeBadRequestResponse = function (res, message) {
-    console.log("writeBadRequestResponse: " + message);
-    res.writeHead(400, { "Content-type": "text/plain" });
-    res.end(message);
-};

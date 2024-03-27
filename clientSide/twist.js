@@ -116,10 +116,17 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             copyBtn.textContent = "Copy Warning to Clipboard";
             copyBtn.id = "copyBtn";
 
+            // Create a re-scan tweet button
+            const reScanBtn = document.createElement("button");
+            reScanBtn.classList.add("action_btn", "submit");
+            reScanBtn.textContent = "Re-Scan Tweet Text";
+            reScanBtn.id = "reScanBtn";
+
             prevBtn.addEventListener("click", showPreviousPage);
             nextBtn.addEventListener("click", showNextPage);
             skipBtn.addEventListener("click", showSkipAheadPage);
             copyBtn.addEventListener("click", copyWarning);
+            reScanBtn.addEventListener("click", reScanTweet);
 
             // Appends the pagination buttons to the twistAppBody
             const twistButtons = document.createElement("div");
@@ -128,6 +135,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             twistButtons.appendChild(nextBtn);
             twistButtons.appendChild(skipBtn);
             twistButtons.appendChild(copyBtn);
+            twistButtons.appendChild(reScanBtn);
             twistPageContainer.appendChild(twistButtons);
 
             // Sets up the functionality for multiple pages in the design
@@ -159,6 +167,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.textContent = "No";
 
                             copyBtn.style.display = "none";
+                            reScanBtn.style.display = "none";
                             break;
                         case PAGES.NO_WARNING_PAGE:
                             postBtnContainer.style.display = "none";
@@ -171,6 +180,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.textContent = "No";
 
                             copyBtn.style.display = "none";
+                            reScanBtn.style.display = "none";
                             break;
                         case PAGES.SCANNED_NO_SC_PAGE:
                             postBtnContainer.style.display = "none";
@@ -180,8 +190,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             nextBtn.textContent = "Okay, Got It";
 
                             skipBtn.style.display = "none";
-
                             copyBtn.style.display = "none";
+                            reScanBtn.style.display = "none";
                             break;
                         case PAGES.SCANNED_SC_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
@@ -193,18 +203,20 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "none";
 
                             copyBtn.style.display = "block";
+
+                            reScanBtn.style.display = "none";
                             break;
                         case PAGES.THANKS_PAGE:
                             postBtnContainer.style.display = "block";
 
                             prevBtn.style.display = "block";
                             if (
-                                lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE
+                                lastPageIndex === PAGES.SCANNED_SC_DETECTED_PAGE
                             ) {
                                 prevBtn.textContent =
                                     "Back to Warning Examples";
                             } else if (
-                                lastPageIndex == PAGES.SCANNED_NO_SC_PAGE
+                                lastPageIndex === PAGES.SCANNED_NO_SC_PAGE
                             ) {
                                 prevBtn.textContent =
                                     "Back to Sensitive Content Examples";
@@ -213,6 +225,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
+
+                            reScanBtn.style.display = "block";
                             break;
                         case PAGES.YOU_CAN_EDIT_PAGE:
                             postBtnContainer.style.display = "block";
@@ -223,6 +237,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
+                            reScanBtn.style.display = "none";
                             break;
                         default:
                             postBtnContainer.style.display = "block";
@@ -230,6 +245,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
+                            reScanBtn.style.display = "none";
                     }
                 }
             }
@@ -254,7 +270,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                 try {
                     // Send tweetText to the server for saving
-                    MY_TWEET_ID = await saveTweetToDatabase(
+                    await saveTweetToDatabase(
                         currPrompt,
                         tweetText,
                         currentPageIndex,
@@ -263,8 +279,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     );
 
                     if (
-                        currentPageIndex == PAGES.START_PAGE ||
-                        currentPageIndex == PAGES.WRITE_MORE_PAGE
+                        currentPageIndex === PAGES.START_PAGE ||
+                        currentPageIndex === PAGES.WRITE_MORE_PAGE
                     ) {
                         twistAppContainer.style.display = "block";
 
@@ -285,16 +301,16 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             showPage(PAGES.NO_WARNING_PAGE);
                         }
                     } else if (
-                        currentPageIndex == PAGES.THANKS_PAGE ||
-                        currentPageIndex == PAGES.YOU_CAN_EDIT_PAGE ||
-                        currentPageIndex == PAGES.ERROR_PAGE
+                        currentPageIndex === PAGES.THANKS_PAGE ||
+                        currentPageIndex === PAGES.YOU_CAN_EDIT_PAGE ||
+                        currentPageIndex === PAGES.ERROR_PAGE
                     ) {
                         showPage(PAGES.START_PAGE);
                         SC_DETECTED = false;
                         document.getElementById("textInput").value = "";
                         document.getElementById("response").innerText = "";
                         const newPrompt = getNextPrompt();
-                        if (newPrompt == "") {
+                        if (newPrompt === "") {
                             let link = "";
                             switch (nextDataset) {
                                 case "1":
@@ -379,7 +395,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             });
 
             async function showNextPage() {
-                let nextPageIndex = PAGES.START_PAGE;
+                let nextPageIndex = PAGES.ERROR_PAGE;
                 switch (currentPageIndex) {
                     case PAGES.WARNING_DETECTED_PAGE:
                         try {
@@ -390,7 +406,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             return;
                         }
 
-                        if (nextPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
+                        if (nextPageIndex === PAGES.SCANNED_SC_DETECTED_PAGE) {
                             SC_DETECTED = true;
                         } else {
                             SC_DETECTED = false;
@@ -406,7 +422,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             return;
                         }
 
-                        if (nextPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
+                        if (nextPageIndex === PAGES.SCANNED_SC_DETECTED_PAGE) {
                             SC_DETECTED = true;
                         } else {
                             SC_DETECTED = false;
@@ -436,7 +452,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     return;
                 }
 
-                if (scInt == PAGES.SCANNED_SC_DETECTED_PAGE) {
+                if (scInt === PAGES.SCANNED_SC_DETECTED_PAGE) {
                     SC_DETECTED = true;
                 } else {
                     SC_DETECTED = false;
@@ -486,6 +502,25 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 }
             }
 
+            async function reScanTweet() {
+                let nextPageIndex = PAGES.ERROR_PAGE;
+                try {
+                    nextPageIndex = await sendTweetToOpenAI();
+                } catch (error) {
+                    console.error(error);
+                    nextPageIndex = PAGES.ERROR_PAGE;
+                    return;
+                }
+
+                if (nextPageIndex === PAGES.SCANNED_SC_DETECTED_PAGE) {
+                    SC_DETECTED = true;
+                } else {
+                    SC_DETECTED = false;
+                }
+
+                showPage(nextPageIndex);
+            }
+
             showPage(currentPageIndex);
 
             // Builds the twistAppContainer with all its components
@@ -511,20 +546,18 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 }
 
 async function sendTweetToOpenAI() {
-    try {
-        const activePage = document.querySelector(".twist-page.active");
-        const textInput = document.getElementById("textInput").value.trim();
-        const responseElement = document.getElementById("response");
+    const activePage = document.querySelector(".twist-page.active");
+    const textInput = document.getElementById("textInput").value.trim();
+    const responseElement = document.getElementById("response");
 
+    try {
         if (
             !activePage ||
-            (activePage.id !== "page2" && activePage.id !== "page1")
+            (activePage.id !== "page1" &&
+                activePage.id !== "page2" &&
+                activePage.id !== "page5")
         ) {
             throw new Error("Invalid page state");
-        }
-
-        if (textInput.length <= 3) {
-            throw new Error("Tweet was too short to communicate with OpenAI");
         }
 
         const apiPrompt = await createPrompt(textInput);
@@ -609,9 +642,9 @@ async function saveTweetToDatabase(
     PROLIFIC_ID
 ) {
     let userScanned = false;
-    const openAIResponse = document.getElementById("response").innerText;
 
-    if (currentPageIndex == PAGES.START_PAGE) {
+    if (currentPageIndex === PAGES.START_PAGE) {
+        console.log("Saving Original Tweet");
         try {
             // Make an asynchronous request to the server
             const response = await fetch("/save-original-tweet", {
@@ -622,6 +655,8 @@ async function saveTweetToDatabase(
                 body: JSON.stringify({
                     prolificID: PROLIFIC_ID,
                     prompt: currPrompt,
+                    event: "save original tweet",
+                    timestamp: getTimestamp(),
                     tweetText: tweetText,
                 }),
             });
@@ -632,25 +667,30 @@ async function saveTweetToDatabase(
 
             // Extract the tweetID from the response
             const data = await response.json();
-            const tweetID = data.data._id; // Store the tweetID for later use
-            return tweetID;
+            MY_TWEET_ID = data.data._id; // Store the tweetID for later use
         } catch (error) {
             console.error("Error saving tweet:", error);
             throw error; // Propagate the error further if needed
         }
-    } else if (currentPageIndex == PAGES.THANKS_PAGE) {
+        return;
+    } else if (currentPageIndex === PAGES.THANKS_PAGE) {
+        console.log("Going to Save Revised Tweet Soon 1");
         userScanned = true;
         if (lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
             scDetected = true;
         }
-    } else if (currentPageIndex == PAGES.YOU_CAN_EDIT_PAGE) {
+    } else if (currentPageIndex === PAGES.YOU_CAN_EDIT_PAGE) {
+        console.log("Going to Save Revised Tweet Soon 2");
         if (lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
             scDetected = true;
         }
     } else {
+        console.log("Error Why??");
         return; // ERROR
     }
 
+    const openAIResponse = document.getElementById("response").innerText;
+    console.log("Saving Revised Tweet");
     try {
         // Make an asynchronous request to the server
         const response = await fetch("/save-revised-tweet", {
@@ -659,11 +699,13 @@ async function saveTweetToDatabase(
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                tweetID: MY_TWEET_ID,
+                event: "save updated tweet",
+                timestamp: getTimestamp(),
                 tweetText: tweetText,
                 userScanned: userScanned,
                 scDetected: SC_DETECTED,
                 openAIResponse: openAIResponse,
-                tweetID: MY_TWEET_ID,
             }),
         });
 
@@ -674,4 +716,30 @@ async function saveTweetToDatabase(
         console.error("Error saving revised tweet:", error);
         throw error; // Propagate the error further if needed
     }
+}
+
+function getTimestamp() {
+    // Get the current timestamp in milliseconds
+    const timestamp = Date.now();
+
+    // Create a new Date object using the timestamp
+    const date = new Date(timestamp);
+
+    // Get the components of the date (year, month, day, hour, minute, second)
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // Month starts from 0
+    const day = date.getDate();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    const second = date.getSeconds();
+
+    // Create a human-readable date and time string
+    const formattedDate = `${year}-${month < 10 ? "0" : ""}${month}-${
+        day < 10 ? "0" : ""
+    }${day} ${hour < 10 ? "0" : ""}${hour}:${minute < 10 ? "0" : ""}${minute}:${
+        second < 10 ? "0" : ""
+    }${second}`;
+
+    console.log(formattedDate); // Output: "2024-03-27 12:45:30"
+    return formattedDate;
 }
