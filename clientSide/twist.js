@@ -11,6 +11,7 @@ const PAGES = Object.freeze({
     THANKS_PAGE: 5,
     YOU_CAN_EDIT_PAGE: 6,
     ERROR_PAGE: 7,
+    WRITE_MORE_PAGE: 8,
 });
 
 // This function waits for an element to be present before acting on it
@@ -68,10 +69,10 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                                 <p>Type your tweet in the text box...</p> \
                                             </div> \
                                             <div class="twist-page" id="page1"> \
-                                                <p>Warning detected.  Thank you for adding a warning!  Can I scan to see if your content requires one?</p> \
+                                                <p>Thank you for adding a warning!  Can I scan to see if your content requires one?</p> \
                                             </div> \
                                             <div class="twist-page" id="page2"> \
-                                                <p>No trigger or content warning detected.  Would you like me to scan to see if you need a warning?</p> \
+                                                <p>Would you like me to scan to see if your content needs a trigger warning or content warning?</p> \
                                             </div> \
                                             <div class="twist-page" id="page3"> \
                                                 <p>Thanks for scanning!  No sensitive content detected.  For future reference, here are some topics where it is recommended to add a warning: violence, sex, stigma, anything disturbing, offensive or crude language, risky behaviors, mental health, death, adult restrictive or NSFW content, crime, abuse, or sociopolitical.</p> \
@@ -87,6 +88,9 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                             </div> \
                                             <div class="twist-page" id="page7"> \
                                                 <p>ERROR ERROR ERROR</p> \
+                                            </div> \
+                                            <div class="twist-page" id="page8"> \
+                                                <p>Please write a longer tweet responding to the given prompt.</p> \
                                             </div>';
             twistAppBody.appendChild(twistPageContainer);
 
@@ -210,6 +214,15 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 let tweetText = document.getElementById("textInput").value;
                 tweetText = tweetText.trim();
 
+                // Counting the number of words in the tweet
+                const wordCount = tweetText.split(/\s+/).length;
+
+                // Check if the tweet is at least 5 words long
+                if (wordCount < 6) {
+                    showPage(PAGES.WRITE_MORE_PAGE);
+                    return;
+                }
+
                 try {
                     // Send tweetText to the server for saving
                     MY_TWEET_ID = await saveTweetToDatabase(
@@ -220,26 +233,27 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         PROLIFIC_ID
                     );
 
-                    if (currentPageIndex == PAGES.START_PAGE) {
+                    if (
+                        currentPageIndex == PAGES.START_PAGE ||
+                        currentPageIndex == PAGES.WRITE_MORE_PAGE
+                    ) {
                         twistAppContainer.style.display = "block";
 
                         // Simple check for whether warning is already present
-                        if (tweetText.length > 0) {
-                            if (
-                                tweetText
-                                    .toLowerCase()
-                                    .includes("trigger warning") ||
-                                tweetText.toLowerCase().startsWith("tw") ||
-                                tweetText
-                                    .toLowerCase()
-                                    .includes("content warning") ||
-                                tweetText.toLowerCase().startsWith("cw") ||
-                                tweetText.toLowerCase().includes("nsfw")
-                            ) {
-                                showPage(PAGES.WARNING_DETECTED_PAGE);
-                            } else {
-                                showPage(PAGES.NO_WARNING_PAGE);
-                            }
+                        if (
+                            tweetText
+                                .toLowerCase()
+                                .includes("trigger warning") ||
+                            tweetText.toLowerCase().startsWith("tw") ||
+                            tweetText
+                                .toLowerCase()
+                                .includes("content warning") ||
+                            tweetText.toLowerCase().startsWith("cw") ||
+                            tweetText.toLowerCase().includes("nsfw")
+                        ) {
+                            showPage(PAGES.WARNING_DETECTED_PAGE);
+                        } else {
+                            showPage(PAGES.NO_WARNING_PAGE);
                         }
                     } else if (
                         currentPageIndex == PAGES.THANKS_PAGE ||
@@ -253,7 +267,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         const newPrompt = getNextPrompt();
                         if (newPrompt == "") {
                             let link = "";
-                            console.log("nextDataset: " + nextDataset);
                             switch (nextDataset) {
                                 case "1":
                                     link =
