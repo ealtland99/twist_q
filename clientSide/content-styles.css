@@ -121,3 +121,8 @@ h1 {
 .twist-page.active {
     display: block;
 }
+
+.prompt {
+    text-align: left;
+    margin-left: 16px;
+}

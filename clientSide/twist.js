@@ -295,6 +295,27 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                 "</a>";
                             tweetContainer.style.display = "none";
                         } else {
+                            // Function to extract the number before the prompt
+                            function extractPromptNumber(prompt) {
+                                // Split the prompt string by ':'
+                                const parts = prompt.split(":");
+                                // Extract the number part and remove any leading/trailing spaces
+                                const numberAsString = parts[0].trim();
+                                // Convert the string number to an integer and subtract 1
+                                const number = parseInt(numberAsString) - 1;
+                                return number;
+                            }
+
+                            // Extract the prompt number
+                            const promptNumber = extractPromptNumber(newPrompt);
+
+                            // Update the prompt number element
+                            const promptNumberElement =
+                                document.getElementById("promptNumber");
+                            if (promptNumberElement) {
+                                promptNumberElement.textContent = promptNumber;
+                            }
+
                             promptContainer.textContent = newPrompt;
 
                             breakPageContainer.style.display = "block";
