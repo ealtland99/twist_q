@@ -1,6 +1,18 @@
 let MY_TWEET_ID = "";
 let SC_DETECTED = false;
 
+// Define global constant for page numbers
+const PAGES = Object.freeze({
+    START_PAGE: 0,
+    WARNING_DETECTED_PAGE: 1,
+    NO_WARNING_PAGE: 2,
+    SCANNED_NO_SC_PAGE: 3,
+    SCANNED_SC_DETECTED_PAGE: 4,
+    THANKS_PAGE: 5,
+    YOU_CAN_EDIT_PAGE: 6,
+    ERROR_PAGE: 7,
+});
+
 // This function waits for an element to be present before acting on it
 // (like when you want to append to something, you need to ensure it's there first)
 function waitForElm(selector) {
@@ -108,8 +120,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
             // Sets up the functionality for multiple pages in the design
             const pages = twistAppBody.querySelectorAll(".twist-page");
-            let currentPageIndex = 0;
-            let lastPageIndex = 0;
+            let currentPageIndex = PAGES.START_PAGE;
+            let lastPageIndex = PAGES.START_PAGE;
 
             function showPage(index) {
                 if (pages.length >= 1) {
@@ -124,13 +136,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     lastPageIndex = currentPageIndex;
                     currentPageIndex = index;
                     switch (currentPageIndex) {
-                        case 0:
+                        case PAGES.START_PAGE:
                             postBtnContainer.style.display = "block";
                             prevBtn.style.display = "none";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             break;
-                        case 1:
+                        case PAGES.WARNING_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
@@ -140,7 +152,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "block";
                             skipBtn.textContent = "No";
                             break;
-                        case 2:
+                        case PAGES.NO_WARNING_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
@@ -150,7 +162,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "block";
                             skipBtn.textContent = "No";
                             break;
-                        case 3:
+                        case PAGES.SCANNED_NO_SC_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
@@ -159,7 +171,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                             skipBtn.style.display = "none";
                             break;
-                        case 4:
+                        case PAGES.SCANNED_SC_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
@@ -168,13 +180,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                             skipBtn.style.display = "none";
                             break;
-                        case 5:
+                        case PAGES.THANKS_PAGE:
                             postBtnContainer.style.display = "block";
                             prevBtn.style.display = "block";
                             nextBtn.style.display = "none";
                             skipBtn.style.display = "none";
                             break;
-                        case 6:
+                        case PAGES.YOU_CAN_EDIT_PAGE:
                             postBtnContainer.style.display = "block";
                             prevBtn.style.display = "block";
                             nextBtn.style.display = "none";
@@ -208,7 +220,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         PROLIFIC_ID
                     );
 
-                    if (currentPageIndex == 0) {
+                    if (currentPageIndex == PAGES.START_PAGE) {
                         twistAppContainer.style.display = "block";
 
                         // Simple check for whether warning is already present
@@ -224,17 +236,17 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                 tweetText.toLowerCase().startsWith("cw") ||
                                 tweetText.toLowerCase().includes("nsfw")
                             ) {
-                                showPage(1);
+                                showPage(PAGES.WARNING_DETECTED_PAGE);
                             } else {
-                                showPage(2);
+                                showPage(PAGES.NO_WARNING_PAGE);
                             }
                         }
                     } else if (
-                        currentPageIndex == 5 ||
-                        currentPageIndex == 6 ||
-                        currentPageIndex == 7
+                        currentPageIndex == PAGES.THANKS_PAGE ||
+                        currentPageIndex == PAGES.YOU_CAN_EDIT_PAGE ||
+                        currentPageIndex == PAGES.ERROR_PAGE
                     ) {
-                        showPage(0);
+                        showPage(PAGES.START_PAGE);
                         SC_DETECTED = false;
                         document.getElementById("textInput").value = "";
                         document.getElementById("response").innerText = "";
@@ -304,45 +316,45 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             });
 
             async function showNextPage() {
-                let nextPageIndex = 0;
+                let nextPageIndex = PAGES.START_PAGE;
                 switch (currentPageIndex) {
-                    case 1:
+                    case PAGES.WARNING_DETECTED_PAGE:
                         try {
                             nextPageIndex = await sendTweetToOpenAI();
                         } catch (error) {
                             console.error(error);
-                            nextPageIndex = 7;
+                            nextPageIndex = PAGES.ERROR_PAGE;
                             return;
                         }
 
-                        if (nextPageIndex == 4) {
+                        if (nextPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
                             SC_DETECTED = true;
                         } else {
                             SC_DETECTED = false;
                         }
 
                         break;
-                    case 2:
+                    case PAGES.NO_WARNING_PAGE:
                         try {
                             nextPageIndex = await sendTweetToOpenAI();
                         } catch (error) {
                             console.error(error);
-                            nextPageIndex = 7;
+                            nextPageIndex = PAGES.ERROR_PAGE;
                             return;
                         }
 
-                        if (nextPageIndex == 4) {
+                        if (nextPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
                             SC_DETECTED = true;
                         } else {
                             SC_DETECTED = false;
                         }
 
                         break;
-                    case 3:
-                        nextPageIndex = 5;
+                    case PAGES.SCANNED_NO_SC_PAGE:
+                        nextPageIndex = PAGES.THANKS_PAGE;
                         break;
-                    case 4:
-                        nextPageIndex = 5;
+                    case PAGES.SCANNED_SC_DETECTED_PAGE:
+                        nextPageIndex = PAGES.THANKS_PAGE;
                 }
 
                 showPage(nextPageIndex);
@@ -353,7 +365,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             }
 
             async function showSkipAheadPage() {
-                let scInt = 0;
+                let scInt = PAGES.START_PAGE;
                 try {
                     scInt = await sendTweetToOpenAI();
                 } catch (error) {
@@ -361,13 +373,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     return;
                 }
 
-                if (scInt == 4) {
+                if (scInt == PAGES.SCANNED_SC_DETECTED_PAGE) {
                     SC_DETECTED = true;
                 } else {
                     SC_DETECTED = false;
                 }
 
-                showPage(6);
+                showPage(PAGES.YOU_CAN_EDIT_PAGE);
             }
 
             showPage(currentPageIndex);
@@ -430,13 +442,13 @@ async function sendTweetToOpenAI() {
             jsonResponse.response);
 
         if (responseText.startsWith("No")) {
-            return 3;
+            return PAGES.SCANNED_NO_SC_PAGE;
         } else if (responseText.startsWith("Yes")) {
             const topicsList = document.getElementById("topTopics");
             const index = responseText.indexOf("1");
             if (index !== -1) {
                 topicsList.innerText = responseText.substring(index);
-                return 4;
+                return PAGES.SCANNED_SC_DETECTED_PAGE;
             } else {
                 throw new Error("Invalid response from OpenAI");
             }
@@ -446,7 +458,7 @@ async function sendTweetToOpenAI() {
     } catch (error) {
         console.error("Error in sendTweetToOpenAI:", error.message);
         responseElement.innerText = "Error communicating with OpenAI";
-        return 7;
+        return PAGES.ERROR_PAGE;
     }
 }
 
@@ -495,7 +507,7 @@ async function saveTweetToDatabase(
     let userScanned = false;
     const openAIResponse = document.getElementById("response").innerText;
 
-    if (currentPageIndex == 0) {
+    if (currentPageIndex == PAGES.START_PAGE) {
         try {
             // Make an asynchronous request to the server
             const response = await fetch("/save-original-tweet", {
@@ -522,13 +534,13 @@ async function saveTweetToDatabase(
             console.error("Error saving tweet:", error);
             throw error; // Propagate the error further if needed
         }
-    } else if (currentPageIndex == 5) {
+    } else if (currentPageIndex == PAGES.THANKS_PAGE) {
         userScanned = true;
-        if (lastPageIndex == 4) {
+        if (lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
             scDetected = true;
         }
-    } else if (currentPageIndex == 6) {
-        if (lastPageIndex == 4) {
+    } else if (currentPageIndex == PAGES.YOU_CAN_EDIT_PAGE) {
+        if (lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
             scDetected = true;
         }
     } else {
