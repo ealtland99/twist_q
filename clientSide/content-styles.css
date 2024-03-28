@@ -132,3 +132,15 @@ p {
     text-align: left;
     margin-left: 16px;
 }
+
+.agreeingText {
+    margin: 0;
+}
+
+label > input {
+    margin-right: 5px; /* Adjust the margin as needed */
+}
+
+.agreeRadioBtnContainer {
+    margin-top: 12px;
+}

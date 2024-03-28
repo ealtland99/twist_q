@@ -138,6 +138,54 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             twistButtons.appendChild(reScanBtn);
             twistPageContainer.appendChild(twistButtons);
 
+            // Appends the agree with TWIST app text and buttons
+            const agreeRadioBtnContainer = document.createElement("div");
+            agreeRadioBtnContainer.classList.add("agreeRadioBtnContainer");
+
+            const agreeingText = document.createElement("p");
+            agreeingText.classList.add("agreeingText");
+            agreeingText.textContent = "Do you agree with the scan results?";
+            agreeRadioBtnContainer.appendChild(agreeingText);
+
+            // Create the first radio button
+            const radioButton1 = document.createElement("input");
+            radioButton1.type = "radio";
+            radioButton1.name = "agreeDisagree"; // Add a name to group radio buttons
+            radioButton1.value = "agree";
+            radioButton1.id = "agreeRadio"; // Optional: Assign an id for easier manipulation
+
+            // Create the label for the first radio button
+            const label1 = document.createElement("label");
+            label1.htmlFor = "agreeRadio"; // Associate label with input using id
+            label1.appendChild(radioButton1);
+            label1.appendChild(document.createTextNode("I agree"));
+            agreeRadioBtnContainer.appendChild(label1);
+
+            // Create the second radio button
+            const radioButton2 = document.createElement("input");
+            radioButton2.type = "radio";
+            radioButton2.name = "agreeDisagree"; // Add a name to group radio buttons
+            radioButton2.value = "disagree";
+            radioButton2.id = "disagreeRadio"; // Optional: Assign an id for easier manipulation
+
+            // Create the label for the second radio button
+            const label2 = document.createElement("label");
+            label2.htmlFor = "disagreeRadio"; // Associate label with input using id
+            label2.style.marginLeft = "15px";
+            label2.appendChild(radioButton2);
+            label2.appendChild(document.createTextNode("I disagree"));
+            agreeRadioBtnContainer.appendChild(label2);
+
+            // Append the container to the page
+            twistPageContainer.appendChild(agreeRadioBtnContainer);
+
+            // Add event listener to track changes in selection
+            agreeRadioBtnContainer.addEventListener("change", function (event) {
+                const selectedValue = event.target.value;
+                console.log("Selected value:", selectedValue);
+                // TODO Save button press to MongoDB
+            });
+
             // Sets up the functionality for multiple pages in the design
             const pages = twistAppBody.querySelectorAll(".twist-page");
             let currentPageIndex = PAGES.START_PAGE;
@@ -168,6 +216,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
+                            agreeRadioBtnContainer.style.display = "none";
                             break;
                         case PAGES.NO_WARNING_PAGE:
                             postBtnContainer.style.display = "none";
@@ -181,6 +230,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
+                            agreeRadioBtnContainer.style.display = "none";
                             break;
                         case PAGES.SCANNED_NO_SC_PAGE:
                             postBtnContainer.style.display = "none";
@@ -192,6 +242,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
+
+                            agreeRadioBtnContainer.style.display = "block";
                             break;
                         case PAGES.SCANNED_SC_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
@@ -205,6 +257,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             copyBtn.style.display = "block";
 
                             reScanBtn.style.display = "none";
+
+                            agreeRadioBtnContainer.style.display = "block";
                             break;
                         case PAGES.THANKS_PAGE:
                             postBtnContainer.style.display = "block";
@@ -227,6 +281,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             copyBtn.style.display = "none";
 
                             reScanBtn.style.display = "block";
+
+                            agreeRadioBtnContainer.style.display = "none";
                             break;
                         case PAGES.YOU_CAN_EDIT_PAGE:
                             postBtnContainer.style.display = "block";
@@ -238,6 +294,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
+                            agreeRadioBtnContainer.style.display = "none";
                             break;
                         default:
                             postBtnContainer.style.display = "block";
@@ -246,6 +303,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
+                            agreeRadioBtnContainer.style.display = "none";
                     }
                 }
             }
