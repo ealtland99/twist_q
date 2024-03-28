@@ -1,4 +1,3 @@
-let MY_TWEET_ID = "";
 let SC_DETECTED = false;
 
 // Define global constant for page numbers
@@ -94,6 +93,47 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                             </div>';
             twistAppBody.appendChild(twistPageContainer);
 
+            // Appends the agree with TWIST app text and buttons
+            const agreeRadioBtnContainer = document.createElement("div");
+            agreeRadioBtnContainer.classList.add("agreeRadioBtnContainer");
+
+            const agreeingText = document.createElement("p");
+            agreeingText.classList.add("agreeingText");
+            agreeingText.textContent = "Do you agree with the scan results?";
+            agreeRadioBtnContainer.appendChild(agreeingText);
+
+            // Create the first radio button
+            const radioButton1 = document.createElement("input");
+            radioButton1.type = "radio";
+            radioButton1.name = "agreeDisagree"; // Add a name to group radio buttons
+            radioButton1.value = "agree";
+            radioButton1.id = "agreeRadio"; // Optional: Assign an id for easier manipulation
+
+            // Create the label for the first radio button
+            const label1 = document.createElement("label");
+            label1.htmlFor = "agreeRadio"; // Associate label with input using id
+            label1.appendChild(radioButton1);
+            label1.appendChild(document.createTextNode("I agree"));
+            agreeRadioBtnContainer.appendChild(label1);
+
+            // Create the second radio button
+            const radioButton2 = document.createElement("input");
+            radioButton2.type = "radio";
+            radioButton2.name = "agreeDisagree"; // Add a name to group radio buttons
+            radioButton2.value = "disagree";
+            radioButton2.id = "disagreeRadio"; // Optional: Assign an id for easier manipulation
+
+            // Create the label for the second radio button
+            const label2 = document.createElement("label");
+            label2.htmlFor = "disagreeRadio"; // Associate label with input using id
+            label2.style.marginLeft = "15px";
+            label2.appendChild(radioButton2);
+            label2.appendChild(document.createTextNode("I disagree"));
+            agreeRadioBtnContainer.appendChild(label2);
+
+            // Append the container to the page
+            twistPageContainer.appendChild(agreeRadioBtnContainer);
+
             // Creates "Previous", "Next", and "Skip" buttons
             const prevBtn = document.createElement("button");
             prevBtn.classList.add("action_btn");
@@ -137,54 +177,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             twistButtons.appendChild(copyBtn);
             twistButtons.appendChild(reScanBtn);
             twistPageContainer.appendChild(twistButtons);
-
-            // Appends the agree with TWIST app text and buttons
-            const agreeRadioBtnContainer = document.createElement("div");
-            agreeRadioBtnContainer.classList.add("agreeRadioBtnContainer");
-
-            const agreeingText = document.createElement("p");
-            agreeingText.classList.add("agreeingText");
-            agreeingText.textContent = "Do you agree with the scan results?";
-            agreeRadioBtnContainer.appendChild(agreeingText);
-
-            // Create the first radio button
-            const radioButton1 = document.createElement("input");
-            radioButton1.type = "radio";
-            radioButton1.name = "agreeDisagree"; // Add a name to group radio buttons
-            radioButton1.value = "agree";
-            radioButton1.id = "agreeRadio"; // Optional: Assign an id for easier manipulation
-
-            // Create the label for the first radio button
-            const label1 = document.createElement("label");
-            label1.htmlFor = "agreeRadio"; // Associate label with input using id
-            label1.appendChild(radioButton1);
-            label1.appendChild(document.createTextNode("I agree"));
-            agreeRadioBtnContainer.appendChild(label1);
-
-            // Create the second radio button
-            const radioButton2 = document.createElement("input");
-            radioButton2.type = "radio";
-            radioButton2.name = "agreeDisagree"; // Add a name to group radio buttons
-            radioButton2.value = "disagree";
-            radioButton2.id = "disagreeRadio"; // Optional: Assign an id for easier manipulation
-
-            // Create the label for the second radio button
-            const label2 = document.createElement("label");
-            label2.htmlFor = "disagreeRadio"; // Associate label with input using id
-            label2.style.marginLeft = "15px";
-            label2.appendChild(radioButton2);
-            label2.appendChild(document.createTextNode("I disagree"));
-            agreeRadioBtnContainer.appendChild(label2);
-
-            // Append the container to the page
-            twistPageContainer.appendChild(agreeRadioBtnContainer);
-
-            // Add event listener to track changes in selection
-            agreeRadioBtnContainer.addEventListener("change", function (event) {
-                const selectedValue = event.target.value;
-                console.log("Selected value:", selectedValue);
-                // TODO Save button press to MongoDB
-            });
 
             // Sets up the functionality for multiple pages in the design
             const pages = twistAppBody.querySelectorAll(".twist-page");
@@ -323,23 +315,28 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 // Check if the tweet is at least 5 words long
                 if (wordCount < 6) {
                     showPage(PAGES.WRITE_MORE_PAGE);
+                    await saveButtonPress(
+                        PROLIFIC_ID,
+                        currPrompt,
+                        "Post Tweet Pressed - Too Short",
+                        tweetText
+                    );
                     return;
                 }
 
                 try {
-                    // Send tweetText to the server for saving
-                    await saveTweetToDatabase(
-                        currPrompt,
-                        tweetText,
-                        currentPageIndex,
-                        lastPageIndex,
-                        PROLIFIC_ID
-                    );
-
+                    // Check if this is the first time post is pressed
                     if (
                         currentPageIndex === PAGES.START_PAGE ||
                         currentPageIndex === PAGES.WRITE_MORE_PAGE
                     ) {
+                        await saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Post Tweet Pressed - First",
+                            tweetText
+                        );
+
                         twistAppContainer.style.display = "block";
 
                         // Simple check for whether warning is already present
@@ -358,11 +355,24 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         } else {
                             showPage(PAGES.NO_WARNING_PAGE);
                         }
-                    } else if (
+                    }
+                    // Or the second or later time it's pressed
+                    else if (
                         currentPageIndex === PAGES.THANKS_PAGE ||
                         currentPageIndex === PAGES.YOU_CAN_EDIT_PAGE ||
                         currentPageIndex === PAGES.ERROR_PAGE
                     ) {
+                        let userScanned =
+                            currentPageIndex === PAGES.THANKS_PAGE;
+
+                        await saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Post Tweet Pressed",
+                            tweetText,
+                            userScanned
+                        );
+
                         showPage(PAGES.START_PAGE);
                         SC_DETECTED = false;
                         document.getElementById("textInput").value = "";
@@ -453,6 +463,13 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             });
 
             async function showNextPage() {
+                const promptContainer = document.getElementById("promptText");
+                let currPrompt = promptContainer.textContent;
+                currPrompt = currPrompt.split(": ")[1];
+
+                let tweetText = document.getElementById("textInput").value;
+                tweetText = tweetText.trim();
+
                 let nextPageIndex = PAGES.ERROR_PAGE;
                 switch (currentPageIndex) {
                     case PAGES.WARNING_DETECTED_PAGE:
@@ -470,6 +487,14 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             SC_DETECTED = false;
                         }
 
+                        saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Yes to Scan Pressed",
+                            tweetText,
+                            true
+                        );
+
                         break;
                     case PAGES.NO_WARNING_PAGE:
                         try {
@@ -486,22 +511,53 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             SC_DETECTED = false;
                         }
 
+                        saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Yes to Scan Pressed",
+                            tweetText,
+                            true
+                        );
+
                         break;
                     case PAGES.SCANNED_NO_SC_PAGE:
                         nextPageIndex = PAGES.THANKS_PAGE;
+                        saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Okay Got It Pressed"
+                        );
                         break;
                     case PAGES.SCANNED_SC_DETECTED_PAGE:
                         nextPageIndex = PAGES.THANKS_PAGE;
+                        saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Okay Got It Pressed"
+                        );
+                        break;
                 }
 
                 showPage(nextPageIndex);
             }
 
             function showPreviousPage() {
+                const promptContainer = document.getElementById("promptText");
+                let currPrompt = promptContainer.textContent;
+                currPrompt = currPrompt.split(": ")[1];
+
+                saveButtonPress(PROLIFIC_ID, currPrompt, "Back Button Pressed");
+
                 showPage(lastPageIndex);
             }
 
             async function showSkipAheadPage() {
+                const promptContainer = document.getElementById("promptText");
+                let currPrompt = promptContainer.textContent;
+                currPrompt = currPrompt.split(": ")[1];
+
+                saveButtonPress(PROLIFIC_ID, currPrompt, "No to Scan Pressed");
+
                 let scInt = PAGES.START_PAGE;
                 try {
                     scInt = await sendTweetToOpenAI();
@@ -520,6 +576,16 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             }
 
             function copyWarning() {
+                const promptContainer = document.getElementById("promptText");
+                let currPrompt = promptContainer.textContent;
+                currPrompt = currPrompt.split(": ")[1];
+
+                saveButtonPress(
+                    PROLIFIC_ID,
+                    currPrompt,
+                    "Copy to Clipboard Button Pressed"
+                );
+
                 // Get the text content of the topTopics element
                 var topTopicsText =
                     document.getElementById("topTopics").textContent;
@@ -561,6 +627,15 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
             }
 
             async function reScanTweet() {
+                const promptContainer = document.getElementById("promptText");
+                let currPrompt = promptContainer.textContent;
+                currPrompt = currPrompt.split(": ")[1];
+
+                let tweetText = document.getElementById("textInput").value;
+                tweetText = tweetText.trim();
+
+                let userScanned = true;
+
                 let nextPageIndex = PAGES.ERROR_PAGE;
                 try {
                     nextPageIndex = await sendTweetToOpenAI();
@@ -575,6 +650,14 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 } else {
                     SC_DETECTED = false;
                 }
+
+                await saveButtonPress(
+                    PROLIFIC_ID,
+                    currPrompt,
+                    "Post Tweet Pressed",
+                    tweetText,
+                    userScanned
+                );
 
                 showPage(nextPageIndex);
             }
@@ -691,91 +774,6 @@ async function createPrompt(tweetText) {
     }
 }
 
-// Function to send tweetText to the server for saving
-async function saveTweetToDatabase(
-    currPrompt,
-    tweetText,
-    currentPageIndex,
-    lastPageIndex,
-    PROLIFIC_ID
-) {
-    let userScanned = false;
-
-    if (currentPageIndex === PAGES.START_PAGE) {
-        console.log("Saving Original Tweet");
-        try {
-            // Make an asynchronous request to the server
-            const response = await fetch("/save-original-tweet", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    prolificID: PROLIFIC_ID,
-                    prompt: currPrompt,
-                    event: "save original tweet",
-                    timestamp: getTimestamp(),
-                    tweetText: tweetText,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to save original tweet");
-            }
-
-            // Extract the tweetID from the response
-            const data = await response.json();
-            MY_TWEET_ID = data.data._id; // Store the tweetID for later use
-        } catch (error) {
-            console.error("Error saving tweet:", error);
-            throw error; // Propagate the error further if needed
-        }
-        return;
-    } else if (currentPageIndex === PAGES.THANKS_PAGE) {
-        console.log("Going to Save Revised Tweet Soon 1");
-        userScanned = true;
-        if (lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
-            scDetected = true;
-        }
-    } else if (currentPageIndex === PAGES.YOU_CAN_EDIT_PAGE) {
-        console.log("Going to Save Revised Tweet Soon 2");
-        if (lastPageIndex == PAGES.SCANNED_SC_DETECTED_PAGE) {
-            scDetected = true;
-        }
-    } else {
-        console.log("Error Why??");
-        return; // ERROR
-    }
-
-    const openAIResponse = document.getElementById("response").innerText;
-    console.log("Saving Revised Tweet");
-    try {
-        // Make an asynchronous request to the server
-        const response = await fetch("/save-revised-tweet", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                tweetID: MY_TWEET_ID,
-                event: "save updated tweet",
-                timestamp: getTimestamp(),
-                tweetText: tweetText,
-                userScanned: userScanned,
-                scDetected: SC_DETECTED,
-                openAIResponse: openAIResponse,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to save revised tweet");
-        }
-    } catch (error) {
-        console.error("Error saving revised tweet:", error);
-        throw error; // Propagate the error further if needed
-    }
-}
-
 function getTimestamp() {
     // Get the current timestamp in milliseconds
     const timestamp = Date.now();
@@ -800,4 +798,75 @@ function getTimestamp() {
 
     console.log(formattedDate); // Output: "2024-03-27 12:45:30"
     return formattedDate;
+}
+
+async function saveButtonPress(
+    PROLIFIC_ID,
+    prompt,
+    eventStr,
+    tweetText,
+    userScanned
+) {
+    try {
+        let saveData = {
+            timestamp: getTimestamp(),
+            event: eventStr,
+        };
+
+        // Additional data based on eventStr
+        switch (eventStr) {
+            case "Okay Got It Pressed":
+                // Get the label of the selected radio button
+                const selectedRadioButton = document.querySelector(
+                    'input[name="agreeDisagree"]:checked'
+                );
+                if (selectedRadioButton) {
+                    selectedLabel = document
+                        .querySelector(
+                            'label[for="' + selectedRadioButton.id + '"]'
+                        )
+                        .innerText.trim();
+                } else {
+                    selectedLabel = null; // If no radio button is selected, set selectedLabel to null
+                }
+
+                saveData.radioAgreeDisagree = selectedLabel;
+                break;
+            case "Yes to Scan Pressed":
+                saveData.tweetText = tweetText;
+                saveData.userScanned = userScanned;
+                saveData.scDetected = SC_DETECTED;
+                saveData.openAIResponse =
+                    document.getElementById("response").innerText;
+                break;
+            case "Post Tweet Pressed":
+                saveData.tweetText = tweetText;
+                saveData.scDetected = SC_DETECTED;
+                saveData.openAIResponse =
+                    document.getElementById("response").innerText;
+                break;
+            default:
+                break;
+        }
+
+        const response = await fetch("/save-button-press", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                prolificID: PROLIFIC_ID,
+                prompt: prompt,
+                saveArray: [saveData], // Save data as an array
+            }),
+        });
+
+        if (response.ok) {
+            console.log("Data saved successfully.");
+        } else {
+            console.error("Failed to save data.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
 }

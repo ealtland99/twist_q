@@ -52,97 +52,56 @@ app.post("/openai", jsonParser, async (req, res) => {
     }
 });
 
-// Endpoint for handling the tweet save to the database
-app.post("/save-original-tweet", jsonParser, async (req, res) => {
-    try {
-        const prolificID = req.body.prolificID;
-        const prompt = req.body.prompt;
-        const timestamp = req.body.timestamp;
-        const event = req.body.event;
-        const tweetText = req.body.tweetText;
+// Endpoint to handle saving button press
+app.post("/save-button-press", jsonParser, async (req, res) => {
+    const { prolificID, prompt, saveArray } = req.body;
 
-        insertTweetRow(
-            {
-                prolificID: prolificID,
-                prompt: prompt,
-                saves: [
-                    {
-                        timestamp: timestamp,
-                        event: event,
-                        tweetText: tweetText,
-                    },
-                ],
-            },
-            function (data) {
-                writeOKResponse(
-                    res,
-                    "Original tweet saved successfully (" + data._id + ")",
-                    { _id: data._id }
-                );
-            }
-        );
+    try {
+        // Search for an existing document
+        let save = await db
+            .collection("records")
+            .findOne({ prolificID, prompt });
+
+        if (!save) {
+            // If no document exists, create a new one
+            save = {
+                prolificID,
+                prompt,
+                saves: saveArray,
+            };
+            // Insert the new document
+            await insertRecord(save);
+            writeOKResponse(res, "Data saved successfully.", save);
+        } else {
+            // If document exists, update it
+            save.saves.push(...saveArray);
+            // Update the existing document
+            await updateRecord(
+                { prolificID, prompt },
+                { $set: { saves: save.saves } }
+            );
+            writeOKResponse(res, "Data appended successfully.", save);
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Internal Server Error" });
+        writeBadRequestResponse(res, "Internal server error.");
     }
 });
 
-// Endpoint for handling the tweet save to the database
-app.post("/save-revised-tweet", jsonParser, async (req, res) => {
-    try {
-        const tweetID = req.body.tweetID;
-        const timestamp = req.body.timestamp;
-        const event = req.body.event;
-        const tweetText = req.body.tweetText;
-        const userScanned = req.body.userScanned;
-        const scDetected = req.body.scDetected;
-        const openAIResponse = req.body.openAIResponse;
-
-        updateTweetRow(
-            { _id: new ObjectId(tweetID) },
-            {
-                $push: {
-                    saves: {
-                        timestamp: timestamp,
-                        event: event,
-                        tweetText: tweetText,
-                        userScanned: userScanned,
-                        scDetected: scDetected,
-                        openAIResponse: openAIResponse,
-                    },
-                },
-            },
-            function (err) {
-                if (err) {
-                    writeBadRequestResponse(
-                        res,
-                        "An error occurred while updating the tweet" + err
-                    );
-                    return;
-                }
-                writeOKResponse(res, "Revised tweet saved successfully");
-            }
-        );
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-let insertTweetRow = function (data, callback) {
-    tweets.insertOne(data);
+let insertRecord = function (data, callback) {
+    records.insertOne(data);
     console.log(
-        "insertTweetRow: Inserted a document into the tweets collection: " +
+        "insertRecord: Inserted a document into the records collection: " +
             data._id
     );
     if (callback) callback(data);
 };
 
-let updateTweetRow = async function (query, update, callback) {
+let updateRecord = async function (query, update, callback) {
     try {
-        await tweets.updateOne(query, update);
+        await records.updateOne(query, update);
 
-        console.log("updateTweetRow: Updated a document in tweets");
+        console.log("updateRecord: Updated a document in records");
         if (callback) callback();
     } catch (error) {
         console.error("Error updating tweet:", error);
@@ -174,7 +133,7 @@ const client = new MongoClient(
 );
 
 let db;
-let tweets;
+let records;
 
 async function run() {
     try {
@@ -188,11 +147,11 @@ async function run() {
 
         // Get the reference to the database and collection
         db = client.db("twist");
-        tweets = db.collection("tweets");
-        if (tweets == null) {
+        records = db.collection("records");
+        if (records == null) {
             // If the collection doesn't exist, create it
-            tweets = await db.createCollection("tweets");
-            console.log("Tweets collection does not exist so created");
+            records = await db.createCollection("records");
+            console.log("records collection does not exist so created");
         }
     } finally {
         // Ensures that the client will close when you finish/error
