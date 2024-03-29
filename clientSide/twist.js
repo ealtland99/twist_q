@@ -68,7 +68,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                                 <p>Type your tweet in the text box...</p> \
                                             </div> \
                                             <div class="twist-page" id="page1"> \
-                                                <p>Thank you for adding a warning!  Can I scan to see if your content requires one?</p> \
+                                                <p>Thank you for adding a warning!</p> \
                                             </div> \
                                             <div class="twist-page" id="page2"> \
                                                 <p>Would you like me to scan to see if your content needs a trigger warning or content warning?</p> \
@@ -193,19 +193,19 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         }
                     });
 
+                    // Get all radio buttons in the group
+                    const radioButtons = document.querySelectorAll(
+                        'input[name="agreeDisagree"]'
+                    );
+
                     lastPageIndex = currentPageIndex;
                     currentPageIndex = index;
                     switch (currentPageIndex) {
                         case PAGES.WARNING_DETECTED_PAGE:
-                            postBtnContainer.style.display = "none";
+                            postBtnContainer.style.display = "block";
                             prevBtn.style.display = "none";
-
-                            nextBtn.style.display = "block";
-                            nextBtn.textContent = "Yes";
-
-                            skipBtn.style.display = "block";
-                            skipBtn.textContent = "No";
-
+                            nextBtn.style.display = "none";
+                            skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
                             agreeRadioBtnContainer.style.display = "none";
@@ -236,6 +236,11 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             reScanBtn.style.display = "none";
 
                             agreeRadioBtnContainer.style.display = "block";
+
+                            // Loop through each radio button and set checked property to false
+                            radioButtons.forEach((radioButton) => {
+                                radioButton.checked = false;
+                            });
                             break;
                         case PAGES.SCANNED_SC_DETECTED_PAGE:
                             postBtnContainer.style.display = "none";
@@ -251,6 +256,11 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             reScanBtn.style.display = "none";
 
                             agreeRadioBtnContainer.style.display = "block";
+
+                            // Loop through each radio button and set checked property to false
+                            radioButtons.forEach((radioButton) => {
+                                radioButton.checked = false;
+                            });
                             break;
                         case PAGES.THANKS_PAGE:
                             postBtnContainer.style.display = "block";
@@ -283,6 +293,18 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             prevBtn.textContent = "Back to Scan";
 
                             nextBtn.style.display = "none";
+                            skipBtn.style.display = "none";
+                            copyBtn.style.display = "none";
+                            reScanBtn.style.display = "none";
+                            agreeRadioBtnContainer.style.display = "none";
+                            break;
+                        case PAGES.ERROR_PAGE:
+                            postBtnContainer.style.display = "none";
+                            prevBtn.style.display = "none";
+
+                            nextBtn.style.display = "block";
+                            nextBtn.textContent = "Reset";
+
                             skipBtn.style.display = "none";
                             copyBtn.style.display = "none";
                             reScanBtn.style.display = "none";
@@ -358,6 +380,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     }
                     // Or the second or later time it's pressed
                     else if (
+                        currentPageIndex === PAGES.WARNING_DETECTED_PAGE ||
                         currentPageIndex === PAGES.THANKS_PAGE ||
                         currentPageIndex === PAGES.YOU_CAN_EDIT_PAGE ||
                         currentPageIndex === PAGES.ERROR_PAGE
@@ -365,18 +388,36 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         let userScanned =
                             currentPageIndex === PAGES.THANKS_PAGE;
 
+                        let eventStr = "Post Tweet Pressed";
+                        if (currentPageIndex === PAGES.WARNING_DETECTED_PAGE) {
+                            eventStr =
+                                "Post Tweet Pressed - Warning Already Present";
+                        }
+
                         await saveButtonPress(
                             PROLIFIC_ID,
                             currPrompt,
-                            "Post Tweet Pressed",
+                            eventStr,
                             tweetText,
                             userScanned
                         );
 
+                        // Clear everything before next prompt
                         showPage(PAGES.START_PAGE);
                         SC_DETECTED = false;
                         document.getElementById("textInput").value = "";
                         document.getElementById("response").innerText = "";
+
+                        // Get all radio buttons in the group
+                        const radioButtons = document.querySelectorAll(
+                            'input[name="agreeDisagree"]'
+                        );
+
+                        // Loop through each radio button and set checked property to false
+                        radioButtons.forEach((radioButton) => {
+                            radioButton.checked = false;
+                        });
+
                         const newPrompt = getNextPrompt();
                         if (newPrompt === "") {
                             let link = "";
@@ -472,30 +513,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                 let nextPageIndex = PAGES.ERROR_PAGE;
                 switch (currentPageIndex) {
-                    case PAGES.WARNING_DETECTED_PAGE:
-                        try {
-                            nextPageIndex = await sendTweetToOpenAI();
-                        } catch (error) {
-                            console.error(error);
-                            nextPageIndex = PAGES.ERROR_PAGE;
-                            return;
-                        }
-
-                        if (nextPageIndex === PAGES.SCANNED_SC_DETECTED_PAGE) {
-                            SC_DETECTED = true;
-                        } else {
-                            SC_DETECTED = false;
-                        }
-
-                        saveButtonPress(
-                            PROLIFIC_ID,
-                            currPrompt,
-                            "Yes to Scan Pressed",
-                            tweetText,
-                            true
-                        );
-
-                        break;
                     case PAGES.NO_WARNING_PAGE:
                         try {
                             nextPageIndex = await sendTweetToOpenAI();
@@ -535,6 +552,23 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             currPrompt,
                             "Okay Got It Pressed"
                         );
+                        break;
+                    case PAGES.ERROR_PAGE:
+                        // Clear everything except prompt and text to start again
+                        SC_DETECTED = false;
+                        document.getElementById("response").innerText = "";
+
+                        // Get all radio buttons in the group
+                        const radioButtons = document.querySelectorAll(
+                            'input[name="agreeDisagree"]'
+                        );
+
+                        // Loop through each radio button and set checked property to false
+                        radioButtons.forEach((radioButton) => {
+                            radioButton.checked = false;
+                        });
+
+                        nextPageIndex = PAGES.START_PAGE;
                         break;
                 }
 
