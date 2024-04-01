@@ -265,17 +265,16 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         case PAGES.THANKS_PAGE:
                             postBtnContainer.style.display = "block";
 
-                            prevBtn.style.display = "block";
                             if (
                                 lastPageIndex === PAGES.SCANNED_SC_DETECTED_PAGE
                             ) {
+                                prevBtn.style.display = "block";
                                 prevBtn.textContent =
                                     "Back to Warning Examples";
                             } else if (
                                 lastPageIndex === PAGES.SCANNED_NO_SC_PAGE
                             ) {
-                                prevBtn.textContent =
-                                    "Back to Sensitive Content Examples";
+                                prevBtn.style.display = "none";
                             }
 
                             nextBtn.style.display = "none";
