@@ -45,6 +45,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 document.querySelector(".twitterPostButton");
             const breakPageContainer = document.querySelector(".breakPageBox");
             const mainPageContainer = document.querySelector(".mainBox");
+            const processingMessage =
+                document.getElementById("processing-message");
 
             // Create the elements and set their properties - all the HTML stuff
             const twistAppContainer = document.createElement("div");
@@ -336,12 +338,16 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 // Check if the tweet is at least 5 words long
                 if (wordCount < 6) {
                     showPage(PAGES.WRITE_MORE_PAGE);
+
+                    processingMessage.style.display = "block";
                     await saveButtonPress(
                         PROLIFIC_ID,
                         currPrompt,
                         "Post Tweet Pressed - Too Short",
                         tweetText
                     );
+                    processingMessage.style.display = "none";
+
                     return;
                 }
 
@@ -351,12 +357,14 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         currentPageIndex === PAGES.START_PAGE ||
                         currentPageIndex === PAGES.WRITE_MORE_PAGE
                     ) {
+                        processingMessage.style.display = "block";
                         await saveButtonPress(
                             PROLIFIC_ID,
                             currPrompt,
                             "Post Tweet Pressed - First",
                             tweetText
                         );
+                        processingMessage.style.display = "none";
 
                         twistAppContainer.style.display = "block";
 
@@ -393,6 +401,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                 "Post Tweet Pressed - Warning Already Present";
                         }
 
+                        processingMessage.style.display = "block";
                         await saveButtonPress(
                             PROLIFIC_ID,
                             currPrompt,
@@ -400,6 +409,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             tweetText,
                             userScanned
                         );
+                        processingMessage.style.display = "none";
 
                         // Clear everything before next prompt
                         showPage(PAGES.START_PAGE);
@@ -514,7 +524,9 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 switch (currentPageIndex) {
                     case PAGES.NO_WARNING_PAGE:
                         try {
+                            processingMessage.style.display = "block";
                             nextPageIndex = await sendTweetToOpenAI();
+                            processingMessage.style.display = "none";
                         } catch (error) {
                             console.error(error);
                             nextPageIndex = PAGES.ERROR_PAGE;
@@ -593,7 +605,9 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                 let scInt = PAGES.START_PAGE;
                 try {
+                    processingMessage.style.display = "block";
                     scInt = await sendTweetToOpenAI();
+                    processingMessage.style.display = "none";
                 } catch (error) {
                     console.error(error);
                     return;
@@ -671,7 +685,9 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                 let nextPageIndex = PAGES.ERROR_PAGE;
                 try {
+                    processingMessage.style.display = "block";
                     nextPageIndex = await sendTweetToOpenAI();
+                    processingMessage.style.display = "none";
                 } catch (error) {
                     console.error(error);
                     nextPageIndex = PAGES.ERROR_PAGE;
@@ -684,6 +700,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     SC_DETECTED = false;
                 }
 
+                processingMessage.style.display = "block";
                 await saveButtonPress(
                     PROLIFIC_ID,
                     currPrompt,
@@ -691,6 +708,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     tweetText,
                     userScanned
                 );
+                processingMessage.style.display = "none";
 
                 showPage(nextPageIndex);
             }
@@ -723,6 +741,7 @@ async function sendTweetToOpenAI() {
     const activePage = document.querySelector(".twist-page.active");
     const textInput = document.getElementById("textInput").value.trim();
     const responseElement = document.getElementById("response");
+    const processingMessage = document.getElementById("processing-message");
 
     try {
         if (
@@ -734,8 +753,11 @@ async function sendTweetToOpenAI() {
             throw new Error("Invalid page state");
         }
 
+        processingMessage.style.display = "block";
         const apiPrompt = await createPrompt(textInput);
+        processingMessage.style.display = "none";
 
+        processingMessage.style.display = "block";
         const response = await fetch("/openai", {
             method: "POST",
             headers: {
@@ -743,12 +765,15 @@ async function sendTweetToOpenAI() {
             },
             body: JSON.stringify({ text: apiPrompt }),
         });
+        processingMessage.style.display = "none";
 
         if (!response.ok) {
             throw new Error("Failed to communicate with OpenAI");
         }
 
+        processingMessage.style.display = "block";
         const jsonResponse = await response.json();
+        processingMessage.style.display = "none";
         const responseText = (responseElement.innerText =
             jsonResponse.response);
 
@@ -776,12 +801,15 @@ async function sendTweetToOpenAI() {
 async function createPrompt(tweetText) {
     let prompt = "";
     let sensitiveTopicsFile = "";
+    const processingMessage = document.getElementById("processing-message");
 
     try {
         // sensitive-topics.txt is formatted version of categories 1-12 from
         // Charles A, Hare-Duke L, Nudds H, Franklin D, Llewellyn-Beardsley J, et al. (2022)
         // Typology of content warnings and trigger warnings: Systematic review. PLOS ONE 17(5): e0266722. https://doi.org/10.1371/journal.pone.0266722
+        processingMessage.style.display = "block";
         const response = await fetch("sensitive-topics.txt");
+        processingMessage.style.display = "none";
 
         // Check if the request was successful (status code 200)
         if (!response.ok) {
@@ -789,7 +817,9 @@ async function createPrompt(tweetText) {
         }
 
         // Get the response text
+        processingMessage.style.display = "block";
         sensitiveTopicsFile = await response.text();
+        processingMessage.style.display = "none";
 
         prompt =
             "Here is a list of 12 sensitive topics with a short definition and some sub-categories each:\n\n" +
@@ -840,6 +870,8 @@ async function saveButtonPress(
     tweetText,
     userScanned
 ) {
+    const processingMessage = document.getElementById("processing-message");
+
     try {
         let saveData = {
             timestamp: getTimestamp(),
@@ -882,6 +914,7 @@ async function saveButtonPress(
                 break;
         }
 
+        processingMessage.style.display = "block";
         const response = await fetch("/save-button-press", {
             method: "POST",
             headers: {
@@ -893,6 +926,7 @@ async function saveButtonPress(
                 saveArray: [saveData], // Save data as an array
             }),
         });
+        processingMessage.style.display = "none";
 
         if (response.ok) {
             console.log("Data saved successfully.");

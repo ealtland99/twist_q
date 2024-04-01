@@ -144,3 +144,7 @@ label > input {
 .agreeRadioBtnContainer {
     margin-top: 12px;
 }
+
+#processing-message {
+    display: none;
+  }
