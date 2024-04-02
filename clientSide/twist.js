@@ -332,6 +332,9 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 let tweetText = document.getElementById("textInput").value;
                 tweetText = tweetText.trim();
 
+                const processingMessage =
+                    document.getElementById("processing-message");
+
                 // Counting the number of words in the tweet
                 const wordCount = tweetText.split(/\s+/).length;
 
@@ -520,6 +523,11 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 let tweetText = document.getElementById("textInput").value;
                 tweetText = tweetText.trim();
 
+                // Get the label of the selected radio button
+                const selectedRadioButton = document.querySelector(
+                    'input[name="agreeDisagree"]:checked'
+                );
+
                 let nextPageIndex = PAGES.ERROR_PAGE;
                 switch (currentPageIndex) {
                     case PAGES.NO_WARNING_PAGE:
@@ -543,13 +551,17 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             PROLIFIC_ID,
                             currPrompt,
                             "Yes to Scan Pressed",
-                            tweetText,
-                            true
+                            tweetText
                         );
 
                         break;
                     case PAGES.SCANNED_NO_SC_PAGE:
-                        nextPageIndex = PAGES.THANKS_PAGE;
+                        if (selectedRadioButton) {
+                            nextPageIndex = PAGES.THANKS_PAGE;
+                        } else {
+                            nextPageIndex = currentPageIndex;
+                        }
+
                         saveButtonPress(
                             PROLIFIC_ID,
                             currPrompt,
@@ -557,7 +569,12 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         );
                         break;
                     case PAGES.SCANNED_SC_DETECTED_PAGE:
-                        nextPageIndex = PAGES.THANKS_PAGE;
+                        if (selectedRadioButton) {
+                            nextPageIndex = PAGES.THANKS_PAGE;
+                        } else {
+                            nextPageIndex = currentPageIndex;
+                        }
+
                         saveButtonPress(
                             PROLIFIC_ID,
                             currPrompt,
@@ -580,6 +597,12 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         });
 
                         nextPageIndex = PAGES.START_PAGE;
+
+                        saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Reset Button Pressed"
+                        );
                         break;
                 }
 
@@ -601,8 +624,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 let currPrompt = promptContainer.textContent;
                 currPrompt = currPrompt.split(": ")[1];
 
-                saveButtonPress(PROLIFIC_ID, currPrompt, "No to Scan Pressed");
-
                 let scInt = PAGES.START_PAGE;
                 try {
                     processingMessage.style.display = "block";
@@ -619,6 +640,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     SC_DETECTED = false;
                 }
 
+                saveButtonPress(PROLIFIC_ID, currPrompt, "No to Scan Pressed");
+
                 showPage(PAGES.YOU_CAN_EDIT_PAGE);
             }
 
@@ -626,12 +649,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 const promptContainer = document.getElementById("promptText");
                 let currPrompt = promptContainer.textContent;
                 currPrompt = currPrompt.split(": ")[1];
-
-                saveButtonPress(
-                    PROLIFIC_ID,
-                    currPrompt,
-                    "Copy to Clipboard Button Pressed"
-                );
 
                 // Get the text content of the topTopics element
                 var topTopicsText =
@@ -651,6 +668,14 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 var warningText = topTopicsText.substring(
                     secondQuoteIndex + 1,
                     thirdQuoteIndex
+                );
+
+                saveButtonPress(
+                    PROLIFIC_ID,
+                    currPrompt,
+                    "Copy to Clipboard Button Pressed",
+                    undefined,
+                    warningText
                 );
 
                 if (warningText != "") {
@@ -681,8 +706,6 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 let tweetText = document.getElementById("textInput").value;
                 tweetText = tweetText.trim();
 
-                let userScanned = true;
-
                 let nextPageIndex = PAGES.ERROR_PAGE;
                 try {
                     processingMessage.style.display = "block";
@@ -704,9 +727,8 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 await saveButtonPress(
                     PROLIFIC_ID,
                     currPrompt,
-                    "Post Tweet Pressed",
-                    tweetText,
-                    userScanned
+                    "ReScan Button Pressed",
+                    tweetText
                 );
                 processingMessage.style.display = "none";
 
@@ -868,7 +890,7 @@ async function saveButtonPress(
     prompt,
     eventStr,
     tweetText,
-    userScanned
+    copiedText
 ) {
     const processingMessage = document.getElementById("processing-message");
 
@@ -880,8 +902,29 @@ async function saveButtonPress(
 
         // Additional data based on eventStr
         switch (eventStr) {
-            case "Okay Got It Pressed":
-                // Get the label of the selected radio button
+            case "Start Button Pressed": // 1
+                // Nothing else to save
+                break;
+            case "Post Tweet Pressed - Too Short": // 2
+                saveData.tweetText = tweetText;
+                break;
+            case "Post Tweet Pressed - First": // 3
+                saveData.tweetText = tweetText;
+                break;
+            case "Post Tweet Pressed": // 4
+                saveData.tweetText = tweetText;
+                break;
+            case "Post Tweet Pressed - Warning Already Present": // 5
+                saveData.tweetText = tweetText;
+                break;
+            case "Yes to Scan Pressed": // 6
+                saveData.tweetText = tweetText;
+                saveData.userScanned = true;
+                saveData.scDetected = SC_DETECTED;
+                saveData.openAIResponse =
+                    document.getElementById("response").innerText;
+                break;
+            case "Okay Got It Pressed": // 7
                 const selectedRadioButton = document.querySelector(
                     'input[name="agreeDisagree"]:checked'
                 );
@@ -892,25 +935,35 @@ async function saveButtonPress(
                         )
                         .innerText.trim();
                 } else {
-                    selectedLabel = null; // If no radio button is selected, set selectedLabel to null
+                    selectedLabel = null;
                 }
-
                 saveData.radioAgreeDisagree = selectedLabel;
                 break;
-            case "Yes to Scan Pressed":
+            case "Reset Button Pressed": // 8
+                // Nothing else to save
+                break;
+            case "Back Button Pressed": // 9
+                // Nothing else to save
+                break;
+            case "No to Scan Pressed": // 10
                 saveData.tweetText = tweetText;
-                saveData.userScanned = userScanned;
+                saveData.userScanned = false;
                 saveData.scDetected = SC_DETECTED;
                 saveData.openAIResponse =
                     document.getElementById("response").innerText;
                 break;
-            case "Post Tweet Pressed":
+            case "Copy to Clipboard Button Pressed": // 11
+                saveData.copiedText = copiedText;
+                break;
+            case "ReScan Button Pressed": // 12
                 saveData.tweetText = tweetText;
+                saveData.userScanned = true;
                 saveData.scDetected = SC_DETECTED;
                 saveData.openAIResponse =
                     document.getElementById("response").innerText;
                 break;
             default:
+                // Should never get here...
                 break;
         }
 
