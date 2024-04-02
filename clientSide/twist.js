@@ -230,7 +230,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
-                            nextBtn.style.display = "block";
+                            nextBtn.style.display = "none";
                             nextBtn.textContent = "Okay, Got It";
 
                             skipBtn.style.display = "none";
@@ -248,7 +248,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             postBtnContainer.style.display = "none";
                             prevBtn.style.display = "none";
 
-                            nextBtn.style.display = "block";
+                            nextBtn.style.display = "none";
                             nextBtn.textContent = "Okay, Got It";
 
                             skipBtn.style.display = "none";
@@ -734,6 +734,11 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                 showPage(nextPageIndex);
             }
+
+            // Event listener for agree/disagree radio buttons
+            agreeRadioBtnContainer.addEventListener("change", function () {
+                nextBtn.style.display = "block";
+            });
 
             showPage(currentPageIndex);
 
