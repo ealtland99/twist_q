@@ -11,12 +11,11 @@
 <body onload="initialize()">
   <h1>Prolific TW/CW Nudge Study</h1>
   <div class="bodyBox firstPageBox">
-    <p> Welcome to Part B of the study.  A prompt will be given and you will write a post responding to that situation to the best of your ability.  Your responses should not include any personal information and should be fictional, but try to connect to the prompt as much as possible. <br> <br> Please enter your Prolific ID, then click the button to consent and continue the study. </p>
-    <textarea id="prolificIDinput" rows="1" cols="10"></textarea>
+    <p> Welcome to Part B of the study.  A prompt will be given and you will write a post responding to that situation to the best of your ability.  Your responses should not include any personal information and should be fictional, but try to connect to the prompt as much as possible. <br> <br> Welcome <span id="prolificID">...</span>, click the button below to consent and continue the study. </p>
   </div>
   <div class="bodyBox breakPageBox">
     <p class="breakPage" style="display: block; opacity: 0;"> You have finished responding to prompt <span id="promptNumber">0</span>/12.  Click the button below to continue to the next prompt. </p>
-    <button class="resumePromptsButton action_btn"> Continue </button>
+    <button class="resumePromptsButton action_btn" style="display: none;"> Continue </button>
   </div>
   <div class="bodyBox mainBox">
     <p class="prompt" id="promptText" style="display: block; opacity: 0;">Write a tweet about ____:</p>
@@ -78,9 +77,14 @@
       // Check if Prolific ID is present in URL params
       const PROLIFIC_ID_URL = urlParams.get('PROLIFIC_ID');
       if (PROLIFIC_ID_URL) {
-        // If Prolific ID is present, fill the textbox with it
-        document.getElementById("prolificIDinput").value = PROLIFIC_ID_URL;
+        document.getElementById("prolificID").textContent = PROLIFIC_ID_URL;
       }
+      else {
+        console.error("ERROR: Invalid Prolific ID value");
+        throw new Error("Invalid Prolific ID value");
+      }
+
+      document.querySelector(".resumePromptsButton").style.display = "block";
     }
   
     const firstPageContainer = document.querySelector(".firstPageBox");
@@ -92,8 +96,7 @@
     const twistAppContainer = document.querySelector(".twitterBoxName");
 
     continueButton.addEventListener("click", function () {
-      let PROLIFIC_ID = document.getElementById("prolificIDinput").value;
-      PROLIFIC_ID = PROLIFIC_ID.trim();
+      let PROLIFIC_ID = document.getElementById("prolificID").textContent;
       if (PROLIFIC_ID == "") {
         console.error("ERROR: Invalid Prolific ID value");
         throw new Error("Invalid Prolific ID value");

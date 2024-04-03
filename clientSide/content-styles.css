@@ -147,4 +147,8 @@ label > input {
 
 #processing-message {
     display: none;
-  }
+}
+
+#prolificID {
+    font-weight: bold;
+}

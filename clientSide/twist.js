@@ -432,46 +432,29 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                         const newPrompt = getNextPrompt();
                         if (newPrompt === "") {
-                            let link = "";
-                            switch (nextDataset) {
-                                case "1":
-                                    link =
-                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Q7?custom1=";
-                                    break;
-                                case 1:
-                                    link =
-                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Q7?custom1=";
-                                    break;
-                                case "2":
-                                    link =
-                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Rm?custom1=";
-                                    break;
-                                case 2:
-                                    link =
-                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Rm?custom1=";
-                                    break;
-                                case "3":
-                                    link =
-                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Ry?custom1=";
-                                    break;
-                                case 3:
-                                    link =
-                                        "https://virginiatech.questionpro.com/t/AWDvFZ11Ry?custom1=";
-                                    break;
-                                default:
-                                    console.log(
-                                        "ERROR WITH NEXT DATASET VALUE!"
-                                    );
-                                    break;
+                            if (
+                                nextDataset != 1 &&
+                                nextDataset != 2 &&
+                                nextDataset != 3 &&
+                                nextDataset != "1" &&
+                                nextDataset != "2" &&
+                                nextDataset != "3"
+                            ) {
+                                console.log("ERROR WITH NEXT DATASET VALUE!");
+                            } else {
+                                let link =
+                                    "https://virginiatech.questionpro.com/twcw-partc-set" +
+                                    nextDataset +
+                                    "?custom1=" +
+                                    PROLIFIC_ID;
+                                promptContainer.innerHTML =
+                                    "Thank you for completing part B of the study.  Please continue to part C by pressing the link below. <br><br><br>" +
+                                    "<a href='" +
+                                    link +
+                                    "' target='_blank'>" +
+                                    link +
+                                    "</a>";
                             }
-                            link = link + PROLIFIC_ID;
-                            promptContainer.innerHTML =
-                                "Thank you for completing part B of the study.  Please continue to part C by pressing the link below. <br><br><br>" +
-                                "<a href='" +
-                                link +
-                                "' target='_blank'>" +
-                                link +
-                                "</a>";
                             tweetContainer.style.display = "none";
                         } else {
                             // Function to extract the number before the prompt
