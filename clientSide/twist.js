@@ -76,10 +76,10 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                                 <p>Would you like me to scan to see if your content needs a trigger warning or content warning?</p> \
                                             </div> \
                                             <div class="twist-page" id="page3"> \
-                                                <p>Thanks for scanning!  No sensitive content detected.  For future reference, here are some topics where it is recommended to add a warning: violence, sex, stigma, anything disturbing, offensive or crude language, risky behaviors, mental health, death, adult restrictive or NSFW content, crime, abuse, or sociopolitical.</p> \
+                                                <p>Thanks for scanning!  <span id="scDetectionText">No sensitive content detected.</span>  For future reference, here are some topics where it is recommended to add a warning: violence, sex, stigma, anything disturbing, offensive or crude language, risky behaviors, mental health, death, adult restrictive or NSFW content, crime, abuse, or sociopolitical.</p> \
                                             </div> \
                                             <div class="twist-page" id="page4"> \
-                                                <p>Thanks for scanning!  Warning recommended due to a high likelihood of one of these sensitive topics being present: <span id="topTopics"></span></p> \
+                                                <p>Thanks for scanning!  <span id="scDetectionText">Warning recommended</span> due to a high likelihood of one of these sensitive topics being present: <span id="topTopics"></span></p> \
                                             </div> \
                                             <div class="twist-page" id="page5"> \
                                                 <p>Thanks for using the TWIST app and making social media a safer place for sensitive users.  You can now edit/post your tweet.</p> \
@@ -360,18 +360,10 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         currentPageIndex === PAGES.START_PAGE ||
                         currentPageIndex === PAGES.WRITE_MORE_PAGE
                     ) {
-                        processingMessage.style.display = "block";
-                        await saveButtonPress(
-                            PROLIFIC_ID,
-                            currPrompt,
-                            "Post Tweet Pressed - First",
-                            tweetText
-                        );
-                        processingMessage.style.display = "none";
-
                         twistAppContainer.style.display = "block";
 
                         // Simple check for whether warning is already present
+                        let warningDetected = false;
                         if (
                             tweetText
                                 .toLowerCase()
@@ -383,10 +375,22 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             tweetText.toLowerCase().startsWith("cw") ||
                             tweetText.toLowerCase().includes("nsfw")
                         ) {
+                            warningDetected = true;
                             showPage(PAGES.WARNING_DETECTED_PAGE);
                         } else {
                             showPage(PAGES.NO_WARNING_PAGE);
                         }
+
+                        processingMessage.style.display = "block";
+                        await saveButtonPress(
+                            PROLIFIC_ID,
+                            currPrompt,
+                            "Post Tweet Pressed - First",
+                            tweetText,
+                            undefined,
+                            warningDetected
+                        );
+                        processingMessage.style.display = "none";
                     }
                     // Or the second or later time it's pressed
                     else if (
@@ -395,23 +399,43 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         currentPageIndex === PAGES.YOU_CAN_EDIT_PAGE ||
                         currentPageIndex === PAGES.ERROR_PAGE
                     ) {
-                        let userScanned =
-                            currentPageIndex === PAGES.THANKS_PAGE;
-
-                        let eventStr = "Post Tweet Pressed";
-                        if (currentPageIndex === PAGES.WARNING_DETECTED_PAGE) {
-                            eventStr =
-                                "Post Tweet Pressed - Warning Already Present";
-                        }
-
                         processingMessage.style.display = "block";
-                        await saveButtonPress(
-                            PROLIFIC_ID,
-                            currPrompt,
-                            eventStr,
-                            tweetText,
-                            userScanned
-                        );
+                        if (currentPageIndex === PAGES.WARNING_DETECTED_PAGE) {
+                            await saveButtonPress(
+                                PROLIFIC_ID,
+                                currPrompt,
+                                "Post Tweet Pressed - Warning Already Present",
+                                tweetText
+                            );
+                        } else {
+                            // Simple check for whether warning is already present
+                            let warningDetected = false;
+                            if (
+                                tweetText
+                                    .toLowerCase()
+                                    .includes("trigger warning") ||
+                                tweetText.toLowerCase().startsWith("tw") ||
+                                tweetText
+                                    .toLowerCase()
+                                    .includes("content warning") ||
+                                tweetText.toLowerCase().startsWith("cw") ||
+                                tweetText.toLowerCase().includes("nsfw")
+                            ) {
+                                warningDetected = true;
+                                showPage(PAGES.WARNING_DETECTED_PAGE);
+                            } else {
+                                showPage(PAGES.NO_WARNING_PAGE);
+                            }
+
+                            await saveButtonPress(
+                                PROLIFIC_ID,
+                                currPrompt,
+                                "Post Tweet Pressed",
+                                tweetText,
+                                undefined,
+                                warningDetected
+                            );
+                        }
                         processingMessage.style.display = "none";
 
                         // Clear everything before next prompt
@@ -430,7 +454,14 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             radioButton.checked = false;
                         });
 
-                        const newPrompt = getNextPrompt();
+                        // Call getNextPrompt and extract values
+                        let nextPromptInfo = getNextPrompt();
+
+                        // Extract values from the returned object
+                        const promptNumber = nextPromptInfo.index;
+                        const scNum = nextPromptInfo.scNum;
+                        const scTopic = nextPromptInfo.scTopic;
+                        const newPrompt = nextPromptInfo.prompt;
                         if (newPrompt === "") {
                             if (
                                 nextDataset != 1 &&
@@ -451,34 +482,45 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                                     "Thank you for completing part B of the study.  Please continue to part C by pressing the link below. <br><br><br>" +
                                     "<a href='" +
                                     link +
-                                    "' target='_blank'>" +
+                                    "' id='myLink' target='_blank'>" +
                                     link +
                                     "</a>";
+                                var nextLink =
+                                    document.getElementById("myLink");
+
+                                if (nextLink) {
+                                    nextLink.addEventListener(
+                                        "click",
+                                        function (event) {
+                                            event.preventDefault(); // Prevent the default behavior
+
+                                            // Get the URL from the href attribute
+                                            var url = this.getAttribute("href");
+
+                                            // Set the current location to the URL
+                                            window.location.href = url;
+                                        }
+                                    );
+                                }
                             }
                             tweetContainer.style.display = "none";
                         } else {
-                            // Function to extract the number before the prompt
-                            function extractPromptNumber(prompt) {
-                                // Split the prompt string by ':'
-                                const parts = prompt.split(":");
-                                // Extract the number part and remove any leading/trailing spaces
-                                const numberAsString = parts[0].trim();
-                                // Convert the string number to an integer and subtract 1
-                                const number = parseInt(numberAsString) - 1;
-                                return number;
-                            }
-
-                            // Extract the prompt number
-                            const promptNumber = extractPromptNumber(newPrompt);
-
                             // Update the prompt number element
                             const promptNumberElement =
                                 document.getElementById("promptNumber");
                             if (promptNumberElement) {
-                                promptNumberElement.textContent = promptNumber;
+                                promptNumberElement.textContent =
+                                    promptNumber - 1;
                             }
 
-                            promptContainer.textContent = newPrompt;
+                            promptContainer.textContent =
+                                scNum +
+                                ": " +
+                                scTopic +
+                                ": " +
+                                promptNumber +
+                                ": " +
+                                newPrompt;
 
                             breakPageContainer.style.display = "block";
                             breakPageContainer.style.opacity = "1";
@@ -878,7 +920,10 @@ async function saveButtonPress(
     prompt,
     eventStr,
     tweetText,
-    copiedText
+    copiedText,
+    warningDetected,
+    scNum,
+    scTopic
 ) {
     const processingMessage = document.getElementById("processing-message");
 
@@ -898,9 +943,11 @@ async function saveButtonPress(
                 break;
             case "Post Tweet Pressed - First": // 3
                 saveData.tweetText = tweetText;
+                saveData.warningDetected = warningDetected;
                 break;
             case "Post Tweet Pressed": // 4
                 saveData.tweetText = tweetText;
+                saveData.warningDetected = warningDetected;
                 break;
             case "Post Tweet Pressed - Warning Already Present": // 5
                 saveData.tweetText = tweetText;
@@ -964,6 +1011,8 @@ async function saveButtonPress(
             body: JSON.stringify({
                 prolificID: PROLIFIC_ID,
                 prompt: prompt,
+                scNum: scNum,
+                scTopic: scTopic,
                 saveArray: [saveData], // Save data as an array
             }),
         });

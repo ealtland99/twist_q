@@ -1,12 +1,12 @@
-Suppose you were seriously injured in a car accident.  Share your experience and describe how you felt during/after the incident.
-Share with your followers a time when you felt judged or marginalized because of your sexual orientation, gender identity, race, ethnicity, religious beliefs, disability status, etc.  If you cannot think of one, write about a time when someone close to you (friend or family member) experienced something like this and write about that.
-It is the middle of a war that has made international news.  You just saw a graphic photo of an injured boy wounded by one of these attacks.  Write a post showing your outrage that people are taking this country's side in the conflict.  (Feel free to select the war and country you can best relate to.)
-Suppose you have a gambling addiction that has affected multiple areas of your life, including your relationships, your work, etc.  Share about your experiences and its impact on your life.
-Write a post discussing the challenges of seeking help for mental health problems and the barriers to accessing treatment for the public who may be misinformed.
-You are a middle school teacher and there have been recent reports of cyberbullying in your school district.  Write a post about the impact of cyberbullying on children's mental health and self-esteem.
-It has been several years since you were the victim of a random act of violence on the street.  Write a post about how this has been a transformative process for you.
-It is the anniversary of the 9/11 terrorist attacks, and you want to be empathetic to those who lost their lives that day, but you also know people can be racist under the guise of patriotism.  Write a post to show your care for your brown and Muslim friends.
-It’s the beginning of the year and many of your friends are sharing their New Year's Resolutions online.  Share about a personal goal you're currently working towards and the steps you're taking to achieve it.
-Write a post about your favorite pet or an animal that’s special to you.
-You’ve just returned from traveling to a place you’ve always wanted to visit.  Write a post about a memorable experience you had there.
-You've had a tough year, but you want to share your appreciation for those who have stood by you as you stand by them.  Write a post about this.
+1 - Violence - Suppose you were seriously injured in a car accident.  Share your experience and describe how you felt during/after the incident.
+3 - Stigma - Share with your followers a time when you felt judged or marginalized because of your sexual orientation, gender identity, race, ethnicity, religious beliefs, disability status, etc.  If you cannot think of one, write about a time when someone close to you (friend or family member) experienced something like this and write about that.
+4 - Disturbing Content - It is the middle of a war that has made international news.  You just saw a graphic photo of an injured boy wounded by one of these attacks.  Write a post showing your outrage that people are taking this country's side in the conflict.  (Feel free to select the war and country you can best relate to.)
+6 - Risky Behaviours - Suppose you have a gambling addiction that has affected multiple areas of your life, including your relationships, your work, etc.  Share about your experiences and its impact on your life.
+7 - Mental Health - Write a post discussing the challenges of seeking help for mental health problems and the barriers to accessing treatment for the public who may be misinformed.
+9 - Parental Guidance - You are a middle school teacher and there have been recent reports of cyberbullying in your school district.  Write a post about the impact of cyberbullying on children's mental health and self-esteem.
+10 - Crime - It has been several years since you were the victim of a random act of violence on the street.  Write a post about how this has been a transformative process for you.
+12 - Sociopolitical - It is the anniversary of the 9/11 terrorist attacks, and you want to be empathetic to those who lost their lives that day, but you also know people can be racist under the guise of patriotism.  Write a post to show your care for your brown and Muslim friends.
+0 - No SC - It’s the beginning of the year and many of your friends are sharing their New Year's Resolutions online.  Share about a personal goal you're currently working towards and the steps you're taking to achieve it.
+0 - No SC - Write a post about your favorite pet or an animal that’s special to you.
+0 - No SC - You’ve just returned from traveling to a place you’ve always wanted to visit.  Write a post about a memorable experience you had there.
+0 - No SC - You've had a tough year, but you want to share your appreciation for those who have stood by you as you stand by them.  Write a post about this.

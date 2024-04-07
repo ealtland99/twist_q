@@ -29,9 +29,21 @@ let currentIndex = 0;
 
 function getNextPrompt() {
     let prompt = "";
+    let scNum = null;
+    let scTopic = "";
+
     if (currentIndex < promptsArray.length) {
-        prompt = currentIndex + 1 + ": " + promptsArray[currentIndex];
+        const promptParts = promptsArray[currentIndex].split("-");
+
+        if (promptParts.length >= 3) {
+            // Extract scNum, scTopic, and prompt text
+            scNum = parseInt(promptParts[0].trim()); // Extract the first integer
+            scTopic = promptParts[1].trim(); // Extract the string between dashes
+            prompt = `${promptParts.slice(2).join("-").trim()}`; // Extract the text after the second dash
+        }
+
         currentIndex++;
     }
-    return prompt;
+
+    return { index: currentIndex, scNum, scTopic, prompt };
 }
