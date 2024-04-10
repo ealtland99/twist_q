@@ -26,6 +26,7 @@
     </div>
   </div>
   <p id="response" style="display: block; opacity: 0;"></p>
+  <p id="routePara" style="display: block; opacity: 0;"></p>
   
   <script type="text/javascript" src="prompts.js"></script>
   <script type="text/javascript" src="twist.js"></script>
@@ -66,6 +67,8 @@
       nextDataset = datasets[1];
     }
 
+    document.getElementById("routePara").textContent = "A" + lastDataset + "B" + currDataset + "C" + nextDataset;
+
     function initialize() {
       initializePrompts(currDataset)
         .then(() => {
@@ -105,12 +108,18 @@
 
     continueButton.addEventListener("click", function () {
       let PROLIFIC_ID = document.getElementById("prolificID").textContent;
-      if (PROLIFIC_ID == "") {
+      if (PROLIFIC_ID == "...") {
         console.error("ERROR: Invalid Prolific ID value");
         throw new Error("Invalid Prolific ID value");
       }
 
-      buildTwistApp(nextDataset, PROLIFIC_ID);
+      let ROUTE = document.getElementById("routePara").textContent;
+      if (ROUTE == "") {
+        console.error("ERROR: Invalid routing value");
+        throw new Error("Invalid routing value");
+      }
+
+      buildTwistApp(nextDataset, PROLIFIC_ID, ROUTE);
 
       const promptContainer = document.getElementById("promptText");
       let contents = promptContainer.textContent.split(": ");
@@ -125,7 +134,7 @@
       
       promptContainer.textContent = promptNumber + ": " + currPrompt;
 
-      saveButtonPress(PROLIFIC_ID, currPrompt, "Start Button Pressed", undefined, undefined, undefined, scNum, scTopic);
+      saveButtonPress(ROUTE, PROLIFIC_ID, currPrompt, "Start Button Pressed", undefined, undefined, undefined, scNum, scTopic);
 
       // Hide break page and continue with the first prompt
       firstPageContainer.style.display = "none";

@@ -35,7 +35,7 @@ function waitForElm(selector) {
     });
 }
 
-function buildTwistApp(nextDataset, PROLIFIC_ID) {
+function buildTwistApp(nextDataset, PROLIFIC_ID, ROUTE) {
     waitForElm(".twitterBoxName").then((elm) => {
         if (
             document.getElementsByClassName("twist-extension-root")[0] == null
@@ -344,6 +344,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                     processingMessage.style.display = "block";
                     await saveButtonPress(
+                        ROUTE,
                         PROLIFIC_ID,
                         currPrompt,
                         "Post Tweet Pressed - Too Short",
@@ -383,6 +384,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                         processingMessage.style.display = "block";
                         await saveButtonPress(
+                            ROUTE,
                             PROLIFIC_ID,
                             currPrompt,
                             "Post Tweet Pressed - First",
@@ -402,6 +404,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         processingMessage.style.display = "block";
                         if (currentPageIndex === PAGES.WARNING_DETECTED_PAGE) {
                             await saveButtonPress(
+                                ROUTE,
                                 PROLIFIC_ID,
                                 currPrompt,
                                 "Post Tweet Pressed - Warning Already Present",
@@ -428,6 +431,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                             }
 
                             await saveButtonPress(
+                                ROUTE,
                                 PROLIFIC_ID,
                                 currPrompt,
                                 "Post Tweet Pressed",
@@ -573,6 +577,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         }
 
                         saveButtonPress(
+                            ROUTE,
                             PROLIFIC_ID,
                             currPrompt,
                             "Yes to Scan Pressed",
@@ -588,6 +593,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         }
 
                         saveButtonPress(
+                            ROUTE,
                             PROLIFIC_ID,
                             currPrompt,
                             "Okay Got It Pressed"
@@ -601,6 +607,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         }
 
                         saveButtonPress(
+                            ROUTE,
                             PROLIFIC_ID,
                             currPrompt,
                             "Okay Got It Pressed"
@@ -624,6 +631,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                         nextPageIndex = PAGES.START_PAGE;
 
                         saveButtonPress(
+                            ROUTE,
                             PROLIFIC_ID,
                             currPrompt,
                             "Reset Button Pressed"
@@ -639,7 +647,12 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 let currPrompt = promptContainer.textContent;
                 currPrompt = currPrompt.split(": ")[1];
 
-                saveButtonPress(PROLIFIC_ID, currPrompt, "Back Button Pressed");
+                saveButtonPress(
+                    ROUTE,
+                    PROLIFIC_ID,
+                    currPrompt,
+                    "Back Button Pressed"
+                );
 
                 showPage(lastPageIndex);
             }
@@ -665,7 +678,12 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                     SC_DETECTED = false;
                 }
 
-                saveButtonPress(PROLIFIC_ID, currPrompt, "No to Scan Pressed");
+                saveButtonPress(
+                    ROUTE,
+                    PROLIFIC_ID,
+                    currPrompt,
+                    "No to Scan Pressed"
+                );
 
                 showPage(PAGES.YOU_CAN_EDIT_PAGE);
             }
@@ -696,6 +714,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
                 );
 
                 saveButtonPress(
+                    ROUTE,
                     PROLIFIC_ID,
                     currPrompt,
                     "Copy to Clipboard Button Pressed",
@@ -750,6 +769,7 @@ function buildTwistApp(nextDataset, PROLIFIC_ID) {
 
                 processingMessage.style.display = "block";
                 await saveButtonPress(
+                    ROUTE,
                     PROLIFIC_ID,
                     currPrompt,
                     "ReScan Button Pressed",
@@ -916,6 +936,7 @@ function getTimestamp() {
 }
 
 async function saveButtonPress(
+    ROUTE,
     PROLIFIC_ID,
     prompt,
     eventStr,
@@ -1009,6 +1030,7 @@ async function saveButtonPress(
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                route: ROUTE,
                 prolificID: PROLIFIC_ID,
                 prompt: prompt,
                 scNum: scNum,

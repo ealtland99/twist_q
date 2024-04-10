@@ -54,7 +54,7 @@ app.post("/openai", jsonParser, async (req, res) => {
 
 // Endpoint to handle saving button press
 app.post("/save-button-press", jsonParser, async (req, res) => {
-    const { prolificID, prompt, scNum, scTopic, saveArray } = req.body;
+    const { route, prolificID, prompt, scNum, scTopic, saveArray } = req.body;
 
     try {
         // Search for an existing document
@@ -65,6 +65,7 @@ app.post("/save-button-press", jsonParser, async (req, res) => {
         if (!save) {
             // If no document exists, create a new one
             save = {
+                route,
                 prolificID,
                 prompt,
                 scNum,
